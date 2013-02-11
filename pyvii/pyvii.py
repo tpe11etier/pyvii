@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import suds
-
+import utils
 
 class Api(object):
     ''' Consumes WSDL and Authentication header.
@@ -321,7 +321,8 @@ class Api(object):
         members = self.client.factory.create('ArrayOfMember')
         for member in member_list:
             member_object = self.client.factory.create('Member')
-            member_dict = dict((k.lower(), v) for k, v in member.items())
+            contact_methods = self.client.factory.create('ArrayOfContactMethod')
+            member_dict = utils.lower_keys(member)
             for k, v in member_dict.items():
                 member_object.Username = member_dict.get('username', None)
                 member_object.Password = member_dict.get('password', None)
@@ -342,16 +343,46 @@ class Api(object):
                     'accountenabled', None)
                 member_object.Subscription = member_dict.get(
                     'subscription', None)
-                member_object.ContactMethods = member_dict.get(
-                    'contactmethods', None)
+            for contact_method_email in utils.find_key('contactmethodemail', member_dict):
+                contact_method_object = self.client.factory.create('ContactMethod')
+                contact_method_email_object = self.client.factory.create('ContactMethodEmail')
+                contact_method_email_object.Label = contact_method_email.get('label')
+                contact_method_email_object.Qualifier = contact_method_email.get('qualifier')
+                contact_method_email_object.Ordinal = contact_method_email.get('ordinal')
+                contact_method_email_object.EmailAddress = contact_method_email.get('emailaddress')
+                contact_methods.ContactMethod.append(contact_method_object)
+                contact_method_object.ContactMethodEmail = contact_method_email_object
+
+            for contact_method_phone in utils.find_key('contactmethodphone', member_dict):
+                contact_method_object = self.client.factory.create('ContactMethod')
+                contact_method_phone_object = self.client.factory.create('ContactMethodPhone')
+                contact_method_phone_object.Label = contact_method_phone.get('label')
+                contact_method_phone_object.Qualifier = contact_method_phone.get('qualifier')
+                contact_method_phone_object.Ordinal = contact_method_phone.get('ordinal')
+                contact_method_phone_object.PhoneNum = contact_method_phone.get('phonenum')
+                contact_method_object.ContactMethodPhone = contact_method_phone_object
+                contact_methods.ContactMethod.append(contact_method_object)
+
+            for contact_method_fax in utils.find_key('contactmethodfax', member_dict):
+                contact_method_object = self.client.factory.create('ContactMethod')
+                contact_method_fax_object = self.client.factory.create('ContactMethodFax')
+                contact_method_fax_object.Label = contact_method_fax.get('label')
+                contact_method_fax_object.Qualifier = contact_method_fax.get('qualifier')
+                contact_method_fax_object.Ordinal = contact_method_fax.get('ordinal')
+                contact_method_fax_object.PhoneNum = contact_method_fax.get('phonenum')
+                contact_method_object.ContactMethodFax = contact_method_fax_object
+                contact_methods.ContactMethod.append(contact_method_object)
+
                 member_object.MemberCustomFields = member_dict.get(
                     'membercustomfields', None)
+            member_object.ContactMethods = contact_methods
             members.Member.append(member_object)
+        print members
 
-        try:
-            return self.client.service.MemberCreate(members)
-        except suds.WebFault as e:
-            return e.fault.detail
+        # try:
+        #     return self.client.service.MemberCreate(members)
+        # except suds.WebFault as e:
+        #     return e.fault.detail
 
     def member_custom_field_simpleset(self):
         pass
@@ -572,14 +603,57 @@ class Api(object):
             # Do nothing.
             pass
 
-        return self.client.service.OrganizationCustomFieldQueryByOrganizationIdNameLength(array_of_orgids,
-                                                                                          custom_field_name)
+        return self.client.service.OrganizationCustomFieldQueryByOrganizationIdName(array_of_orgids,
+                                                                                    custom_field_name)
 
-    def organization_query_root(self):
-        '''Returns OrganizationId, Events and Roles.'''
-        org = self.client.service.OrganizationQueryRoot()
+    def organization_custom_field_query_by_organizationid_type(self,
+                                                               orgid_list,
+                                                               custom_field_type,
+                                                               index=0,
+                                                               length=300):
+        ''' Returns Custom Fields by Org Id and Custom Field Type
 
-        return org
+            Keyword arguments:
+            orgid_list        -- list of org ids
+            custom_field_type -- custom field type
+            index             -- starting index
+            length            -- number of custom fields to return
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+        if isinstance(orgid_list, list):
+            for orgid in orgid_list:
+                array_of_orgids.string.append(orgid)
+        else:
+            # Do nothing.
+            pass
+
+        return self.client.service.OrganizationCustomFieldQueryByOrganizationIdType(array_of_orgids,
+                                                                                    custom_field_type,
+                                                                                    index,
+                                                                                    length)
+
+    def organization_custom_field_query_by_organizationid_type_length(self,
+                                                               orgid_list,
+                                                               custom_field_type):
+        ''' Returns Length of Custom Fields by Org Id and Custom Field Type
+
+            Keyword arguments:
+            orgid_list        -- list of org ids
+            custom_field_type -- custom field type
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+        if isinstance(orgid_list, list):
+            for orgid in orgid_list:
+                array_of_orgids.string.append(orgid)
+        else:
+            # Do nothing.
+            pass
+
+        return self.client.service.OrganizationCustomFieldQueryByOrganizationIdTypeLength(array_of_orgids,
+                                                                                    custom_field_type)
+
+    def organization_custom_field_update(self):
+        pass
 
     def organization_event_type_query_by_id(self,
                                             eventid_list):
@@ -674,6 +748,13 @@ class Api(object):
                                                                    index,
                                                                    length)
 
+    def organization_query_root(self):
+        '''Returns OrganizationId, Events and Roles.'''
+        org = self.client.service.OrganizationQueryRoot()
+
+        return org
+
+
     def role_query_by_id(self,
                          roleid_list):
         ''' Returns Organization Role by RoleId
@@ -688,7 +769,6 @@ class Api(object):
 
         return self.client.service.RoleQueryById(array_of_roleids)
 
-
     # ===========================================================================
     # End Organization Methods
     # ===========================================================================
@@ -697,8 +777,76 @@ class Api(object):
     # Begin Report Methods
     # ===========================================================================
 
+    def report_create(self):
+        pass
+
+    def report_delete_by_id(self):
+        pass
+
+    def report_query_by_id(self):
+        pass
+
+    def report_query_by_memberid_permission(self):
+        pass
+
+    def report_query_by_memberid_permissionlength(self):
+        pass
+
+    def report_type_query_by_id(self):
+        pass
+
+    def report_type_query_by_memberid_permission(self):
+        pass
+
+    def report_type_query_by_memberid_permission_length(self):
+        pass
+
+    def report_type_query_by_organizationid(self):
+        pass
+
+    def report_type_query_by_organizationid_length(self):
+        pass
+
     # ===========================================================================
     # End Report Methods
+    # ===========================================================================
+
+    # ===========================================================================
+    # Begin Scenario Methods
+    # ===========================================================================
+
+    def scenario_activate(self):
+        pass
+
+    def scenario_create(self):
+        pass
+
+    def scenario_delete_by_id(self):
+        pass
+
+    def scenario_query_by_accesscode(self):
+        pass
+
+    def scenario_query_by_id(self):
+        pass
+
+    def scenario_query_by_memberid_permission(self):
+        pass
+
+    def scenario_query_by_memberid_permission_length(self):
+        pass
+
+    def scenario_query_by_name(self):
+        pass
+
+    def scenario_query_by_organizationid(self):
+        pass
+
+    def scenario_query_by_organizationid_length(self):
+        pass
+
+    # ===========================================================================
+    # End Scenario Methods
     # ===========================================================================
 
     # ===========================================================================
@@ -724,6 +872,111 @@ class Api(object):
     # ===========================================================================
     # Begin Team Methods
     # ===========================================================================
+
+    def team_create(self):
+        pass
+
+    def team_delete_by_id(self):
+        pass
+
+    def team_entry_create(self):
+        pass
+
+    def team_entry_delete_by_id(self):
+        pass
+
+    def team_entry_member_query_by_memberid(self):
+        pass
+
+    def team_entry_member_query_by_memberid_length(self):
+        pass
+
+    def team_entry_member_query_by_memberid_teamid(self):
+        pass
+
+    def team_entry_query_by_id(self):
+        pass
+
+    def team_entry_query_by_organizationid(self):
+        pass
+
+    def team_entry_query_by_organizationid_length(self):
+        pass
+
+    def team_entry_query_by_teamid(self):
+        pass
+
+    def team_entry_query_by_teamid_length(self):
+        pass
+
+    def team_entry_subteam_query_by_subteamid(self):
+        pass
+
+    def team_entry_subteam_query_by_subteamid_length(self):
+        pass
+
+    def team_entry_subteam_query_by_subteamid_teamid(self):
+        pass
+
+    def team_entry_update(self):
+        pass
+
+    def team_member_query_by_teamid(self):
+        pass
+
+    def team_query_by_accesscode(self):
+        pass
+
+    def team_query_by_id(self):
+        pass
+
+    def team_query_by_memberid_permission(self):
+        pass
+
+    def team_query_by_memberid_permission_length(self):
+        pass
+
+    def team_query_by_name(self):
+        pass
+
+    def team_query_by_organizationid(self):
+        pass
+
+    def team_query_by_organizationid_length(self):
+        pass
+
+    def team_query_by_sourceidentifier(self):
+        pass
+
+    def team_query_by_subteamid(self):
+        pass
+
+    def team_query_by_subteamid_length(self):
+        pass
+
+    def team_role_create(self):
+        pass
+
+    def team_role_delete_by_id(self):
+        pass
+
+    def team_role_query_by_id(self):
+        pass
+
+    def team_role_query_by_name(self):
+        pass
+
+    def team_role_query_by_organizationid(self):
+        pass
+
+    def team_role_query_by_organizationidlength(self):
+        pass
+
+    def team_role_update(self):
+        pass
+
+    def team_update(self):
+        pass
 
     # ===========================================================================
     # End Team Methods
