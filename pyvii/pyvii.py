@@ -2,30 +2,233 @@
 import suds
 import utils
 
+
+class Error(Exception):
+    '''Base class for exceptions'''
+    pass
+
+
+class APIError(Error):
+    '''Exception raised when an error is received from api'''
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
+
+
+class CredentialCheckFailed(Error):
+    def __init__(self, header):
+        self.header = header
+        print '''Credential check failed.
+                 url=%s,
+                 Domain=%s,
+                 UserId=%s,
+                 UserPassword=%s,
+                 OemId=%s,
+                 OemPassword=%s''' % (self.header['url'],
+                                      self.header['domain'],
+                                      self.header['userid'],
+                                      self.header['userpassword'],
+                                      self.header['oemid'],
+                                      self.header['oempassword'])
+
+    def __str__(self):
+        return repr('''Credential check failed. url=%s,
+                                              Domain=%s,
+                                              UserId=%s,
+                                              UserPassword=%s,
+                                              OemId=%s,
+                                              OemPassword=%s''' % (self.header['url'],
+                                                                   self.header['domain'],
+                                                                   self.header['userid'],
+                                                                   self.header['userpassword'],
+                                                                   self.header['oemid'],
+                                                                   self.header['oempassword']))
+
+
 class Api(object):
     ''' Consumes WSDL and Authentication header.
 
         Keyword arguments:
-        auth_header -- Dictionary of credentials
+        auth_header -- Dictionary containing url and credentials
     '''
     def __init__(self, auth_header):
         auth_header = dict((k.lower(), v) for k, v in auth_header.items())
         try:
             self.url = auth_header.get('url', None)
-            if self.url is None:
-                print 'url required'
-            else:
-                self.client = suds.client.Client(self.url)
-                self.header = self.client.factory.create('AuthHeader')
-                self.header.Domain = auth_header.get('domain', None)
-                self.header.UserId = auth_header.get('userid', None)
-                self.header.UserPassword = auth_header.get(
-                    'userpassword', None)
-                self.header.OemId = auth_header.get('oemid', None)
-                self.header.OemPassword = auth_header.get('oempassword', None)
-                self.client.set_options(soapheaders=self.header)
-        except Exception as e:
-            print e
+            self.client = suds.client.Client(self.url)
+            self.header = self.client.factory.create('AuthHeader')
+            self.header.Domain = auth_header.get('domain', None)
+            self.header.UserId = auth_header.get('userid', None)
+            self.header.UserPassword = auth_header.get(
+                'userpassword', None)
+            self.header.OemId = auth_header.get('oemid', None)
+            self.header.OemPassword = auth_header.get('oempassword', None)
+            self.client.set_options(soapheaders=self.header)
+
+            #Authenticating on initialization to make sure credentials are valid.
+            self.client.service.OrganizationQueryRoot()
+
+            service = self.client.service
+
+            self.methods = {'organization_query_by_id': service.OrganizationQueryById,
+                            'organization_event_type_query_by_organizationid': service.OrganizationEventTypeQueryByOrganizationId,
+                            'escalation_create': service.OrganizationEventTypeQueryByOrganizationId,
+                            'escalation_create': service.OrganizationEventTypeQueryByOrganizationId,
+                            'escalation_delete_by_id': service.OrganizationEventTypeQueryByOrganizationId,
+                            'escalation_query_by_id': service.EscalationQueryById,
+                            'escalation_query_by_memberid_permission': service.EscalationQueryByMemberIdPermission,
+                            'escalation_query_by_memberid_permission_length': service.EscalationQueryByMemberIdPermissionLength,
+                            'escalation_query_by_name': service.EscalationQueryByName,
+                            'escalation_query_by_organizationid': service.EscalationQueryByOrganizationId,
+                            'escalation_query_by_organizationid_length': service.EscalationQueryByOrganizationIdLength,
+                            'escalation_type_query_by_id': service.EscalationTypeQueryById,
+                            'escalation_type_query_by_name': service.EscalationTypeQueryByName,
+                            'escalation_type_query_by_organizationid': service.EscalationTypeQueryByOrganizationId,
+                            'escalation_type_query_by_organizationid_length': service.EscalationTypeQueryByOrganizationIdLength,
+                            'escalation_update': service.EscalationUpdate,
+                            'import_cancel': service.ImportCancel,
+                            'import_confirm': service.ImportConfirm,
+                            'import_create': service.ImportCreate,
+                            'import_definition_create': service.ImportDefinitionCreate,
+                            'import_definition_delet_by_id': service.ImportDefinitionDeleteById,
+                            'import_definition_query_by_id': service.ImportDefinitionQueryById,
+                            'import_definition_query_by_oganizationid': service.ImportDefinitionQueryByOrganizationId,
+                            'import_definition_query_by_organizationi_length': service.ImportDefinitionQueryByOrganizationIdLength,
+                            'import_exception_query_by_importid': service.ImportExceptionQueryByImportId,
+                            'import_exception_query_by_importid_length': service.ImportExceptionQueryByImportIdLength,
+                            'import_query_by_id': service.ImportQueryById,
+                            'import_query_by_organizationid': service.ImportQueryByOrganizationId,
+                            'import_query_by_organizationid_length': service.ImportQueryByOrganizationIdLength,
+                            'member_create': service.MemberCreate,
+                            'member_custom_field_simpleset': service.MemberCustomFieldSimpleSet,
+                            'member_delete_by_id': service.MemberDeleteById,
+                            'member_dialin_credential_create': service.MemberDialinCredentialCreate,
+                            'member_dialin_credential_delete_by_memberid': service.MemberDialinCredentialDeleteByMemberId,
+                            'member_dialin_credential_query_by_memberid': service.MemberDialinCredentialQueryByMemberId,
+                            'member_dialin_credential_update': service.MemberDialinCredentialUpdate,
+                            'member_group_query_by_memberidpermission': service.MemberGroupQueryByMemberIdPermission,
+                            'member_group_query_by_memberid_permission_length': service.MemberGroupQueryByMemberIdPermissionLength,
+                            'member_query_by_dialinid': service.MemberQueryByDialinId,
+                            'member_query_by_emailaddress': service.MemberQueryByEmailAddress,
+                            'member_query_by_emailaddresslength': service.MemberQueryByEmailAddressLength,
+                            'member_query_by_event_subscription': service.MemberQueryByEventSubscription,
+                            'member_query_by_event_subscription_daterange': service.MemberQueryByEventSubscriptionDateRange,
+                            'member_query_by_event_subscription_daterange_length': service.MemberQueryByEventSubscriptionDateRangeLength,
+                            'member_query_by_event_subscription_length': service.MemberQueryByEventSubscriptionLength,
+                            'member_query_by_id': service.MemberQueryById,
+                            'member_query_by_lastname': service.MemberQueryByLastName,
+                            'member_query_by_lastname_length': service.MemberQueryByLastNameLength,
+                            'member_query_by_memberid_permission': service.MemberQueryByMemberIdPermission,
+                            'member_query_by_memberid_permission_length': service.MemberQueryByMemberIdPermissionLength,
+                            'member_query_by_organizationid': service.MemberQueryByOrganizationId,
+                            'member_query_by_organizationid_length': service.MemberQueryByOrganizationIdLength,
+                            'member_query_by_roleid': service.MemberQueryByRoleId,
+                            'member_query_by_roleid_length': service.MemberQueryByRoleIdLength,
+                            'member_query_by_sourceidentifier': service.MemberQueryBySourceIdentifier,
+                            'member_query_by_useridentifier': service.MemberQueryByUserIdentifier,
+                            'member_query_by_username': service.MemberQueryByUsername,
+                            'member_sourceidentifier_query_by_organizationid': service.MemberSourceIdentifierQueryByOrganizationId,
+                            'member_update': service.MemberUpdate,
+                            'timezone_query_all': service.TimeZoneQueryAll,
+                            'timezone_query_by_id': service.TimeZoneQueryById,
+                            'available_contact_method_query_by_organizationid': service.AvailableContactMethodQueryByOrganizationId,
+                            'billing_plan_query_by_organizationid': service.BillingPlanQueryByOrganizationId,
+                            'organization_create': service.OrganizationCreate,
+                            'organization_custom_field_create': service.OrganizationCustomFieldCreate,
+                            'organization_custom_field_delete_by_id': service.OrganizationCustomFieldDeleteById,
+                            'organization_custom_field_query_by_id': service.OrganizationCustomFieldQueryById,
+                            'organization_custom_field_query_by_memberid_permission': service.OrganizationCustomFieldQueryByMemberIdPermission,
+                            'organization_custom_field_query_by_memberid_permission_length': service.OrganizationCustomFieldQueryByMemberIdPermissionLength,
+                            'organization_custom_field_query_by_organizationid': service.OrganizationCustomFieldQueryByOrganizationId,
+                            'organization_custom_field_query_by_organizationid_length': service.OrganizationCustomFieldQueryByOrganizationIdLength,
+                            'organization_custom_field_query_by_organizationid_name': service.OrganizationCustomFieldQueryByOrganizationIdName,
+                            'organization_custom_field_query_by_organizationid_name_length': service.OrganizationCustomFieldQueryByOrganizationIdNameLength,
+                            'organization_custom_field_query_by_organizationid_type': service.OrganizationCustomFieldQueryByOrganizationIdType,
+                            'organization_custom_field_query_by_organizationid_type_length': service.OrganizationCustomFieldQueryByOrganizationIdTypeLength,
+                            'organization_custom_field_update': service.OrganizationCustomFieldUpdate,
+                            'organization_event_type_query_by_id': service.OrganizationEventTypeQueryById,
+                            'organization_event_type_query_by_organizationid': service.OrganizationEventTypeQueryByOrganizationId,
+                            'organization_event_type_query_by_organizationid_length': service.OrganizationEventTypeQueryByOrganizationIdLength,
+                            'organization_query_by_id': service.OrganizationQueryById,
+                            'organization_query_children': service.OrganizationQueryChildren,
+                            'organization_query_children_length': service.OrganizationQueryChildrenLength,
+                            'organization_query_root': service.OrganizationQueryRoot,
+                            'role_query_by_id': service.RoleQueryById,
+                            'report_create': service.ReportCreate,
+                            'report_delete_by_id': service.ReportDeleteById,
+                            'report_query_by_id': service.ReportQueryById,
+                            'report_query_by_memberid_permission': service.ReportQueryByMemberIdPermission,
+                            'report_query_by_memberid_permissionlength': service.ReportQueryByMemberIdPermissionLength,
+                            'report_type_query_by_id': service.ReportTypeQueryById,
+                            'report_type_query_by_memberid_permission': service.ReportTypeQueryByMemberIdPermission,
+                            'report_type_query_by_memberid_permission_length': service.ReportTypeQueryByMemberIdPermissionLength,
+                            'report_type_query_by_organizationid': service.ReportTypeQueryByOrganizationId,
+                            'report_type_query_by_organizationid_length': service.ReportTypeQueryByOrganizationIdLength,
+                            'scenario_activate': service.ScenarioActivate,
+                            'scenario_create': service.ScenarioCreate,
+                            'scenario_delete_by_id': service.ScenarioDeleteById,
+                            'scenario_query_by_accesscode': service.ScenarioQueryByAccessCode,
+                            'scenario_query_by_id': service.ScenarioQueryById,
+                            'scenario_query_by_memberid_permission': service.ScenarioQueryByMemberIdPermission,
+                            'scenario_query_by_memberid_permission_length': service.ScenarioQueryByMemberIdPermissionLength,
+                            'scenario_query_by_name': service.ScenarioQueryByName,
+                            'scenario_query_by_organizationid': service.ScenarioQueryByOrganizationId,
+                            'scenario_query_by_organizationid_length': service.ScenarioQueryByOrganizationIdLength,
+                            'team_create': service.TeamCreate,
+                            'team_delete_by_id': service.TeamDeleteById,
+                            'team_entry_create': service.TeamEntryCreate,
+                            'team_entry_delete_by_id': service.TeamEntryDeleteById,
+                            'team_entry_member_query_by_memberid': service.TeamEntryMemberQueryByMemberId,
+                            'team_entry_member_query_by_memberid_length': service.TeamEntryMemberQueryByMemberIdLength,
+                            'team_entry_member_query_by_memberid_teamid': service.TeamEntryMemberQueryByMemberIdTeamId,
+                            'team_entry_query_by_id': service.TeamEntryQueryById,
+                            'team_entry_query_by_organizationid': service.TeamEntryQueryByOrganizationId,
+                            'team_entry_query_by_organizationid_length': service.TeamEntryQueryByOrganizationIdLength,
+                            'team_entry_query_by_teamid': service.TeamEntryQueryByTeamId,
+                            'team_entry_query_by_teamid_length': service.TeamEntryQueryByTeamIdLength,
+                            'team_entry_subteam_query_by_subteamid': service.TeamEntrySubTeamQueryBySubTeamId,
+                            'team_entry_subteam_query_by_subteamid_length': service.TeamEntrySubTeamQueryBySubTeamIdLength,
+                            'team_entry_subteam_query_by_subteamid_teamid': service.TeamEntrySubTeamQueryBySubTeamIdTeamId,
+                            'team_entry_update': service.TeamEntryUpdate,
+                            'team_member_query_by_teamid': service.TeamMemberQueryByTeamId,
+                            'team_query_by_accesscode': service.TeamQueryByAccessCode,
+                            'team_query_by_id': service.TeamQueryById,
+                            'team_query_by_memberid_permission': service.TeamQueryByMemberIdPermission,
+                            'team_query_by_memberid_permission_length': service.TeamQueryByMemberIdPermissionLength,
+                            'team_query_by_name': service.TeamQueryByName,
+                            'team_query_by_organizationid': service.TeamQueryByOrganizationId,
+                            'team_query_by_organizationid_length': service.TeamQueryByOrganizationIdLength,
+                            'team_query_by_sourceidentifier': service.TeamQueryBySourceIdentifier,
+                            'team_query_by_subteamid': service.TeamQueryBySubTeamId,
+                            'team_query_by_subteamid_length': service.TeamQueryBySubTeamIdLength,
+                            'team_role_create': service.TeamRoleCreate,
+                            'team_role_delete_by_id': service.TeamRoleDeleteById,
+                            'team_role_query_by_id': service.TeamRoleQueryById,
+                            'team_role_query_by_name': service.TeamRoleQueryByName,
+                            'team_role_query_by_organizationid': service.TeamRoleQueryByOrganizationId,
+                            'team_role_query_by_organizationidlength': service.TeamRoleQueryByOrganizationIdLength,
+                            'team_role_update': service.TeamRoleUpdate,
+                            'team_update': service.TeamUpdate
+                            }
+
+        except suds.WebFault:
+            raise CredentialCheckFailed(auth_header)
+
+    def request(self, method, *args):
+        self.method = method
+        self.args = args
+        ''' Handles all requests.
+
+            Keyword arguments:
+            method -- SOAP method called
+            args   -- SOAP method args
+        '''
+        try:
+            return self.methods[self.method](*self.args)
+        except suds.WebFault as error:
+            raise APIError(error)
 
     # ===========================================================================
     # Begin Escalation Methods
@@ -33,7 +236,6 @@ class Api(object):
 
     def escalation_create(self,
                           escalation_list):
-        #TODO - Come back to this
         ''' Creates Escalation Rules.
 
             Keyword arguments:
@@ -64,14 +266,10 @@ class Api(object):
             escalationid_list -- list of escalation ids
         '''
         array_of_escalationids = self.client.factory.create('ArrayOfstring')
-        if isinstance(escalationid_list, list):
-            for escalationid in escalationid_list:
-                array_of_escalationids.string.append(escalationid)
-        else:
-            # Do nothing.
-            pass
+        for escalationid in escalationid_list:
+            array_of_escalationids.string.append(escalationid)
 
-        return self.client.service.EscalationDeleteById(array_of_escalationids)
+        return self.request('escalation_delete_by_id', array_of_escalationids)
 
     def escalation_query_by_id(self,
                                escalationid_list):
@@ -81,14 +279,10 @@ class Api(object):
             escalationid_list -- list of escalation ids
         '''
         array_of_escalationids = self.client.factory.create('ArrayOfstring')
-        if isinstance(escalationid_list, list):
-            for escalationid in escalationid_list:
-                array_of_escalationids.string.append(escalationid)
-        else:
-            # Do nothing.
-            pass
+        for escalationid in escalationid_list:
+            array_of_escalationids.string.append(escalationid)
 
-        return self.client.service.EscalationQueryById(array_of_escalationids)
+        return self.request('escalation_query_by_id', array_of_escalationids)
 
     def escalation_query_by_memberid_permission(self):
         pass
@@ -104,14 +298,10 @@ class Api(object):
             escalation_name_list -- list of escalation names
         '''
         array_of_escalation_names = self.client.factory.create('ArrayOfstring')
-        if isinstance(escalation_name_list, list):
-            for escalation_name in escalation_name_list:
-                array_of_escalation_names.string.append(escalation_name)
-        else:
-            # Do nothing.
-            pass
+        for escalation_name in escalation_name_list:
+            array_of_escalation_names.string.append(escalation_name)
 
-        return self.client.service.EscalationQueryByName(array_of_escalation_names)
+        return self.request('escalation_query_by_name', array_of_escalation_names)
 
     def escalation_query_by_organizationid(self,
                                            orgid_list,
@@ -126,16 +316,13 @@ class Api(object):
 
         '''
         array_of_orgids = self.client.factory.create('ArrayOfstring')
-        if isinstance(orgid_list, list):
-            for orgid in orgid_list:
-                array_of_orgids.string.append(orgid)
-        else:
-            # Do nothing.
-            pass
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
 
-        return self.client.service.EscalationQueryByOrganizationId(array_of_orgids,
-                                                                   index,
-                                                                   length)
+        return self.request('escalation_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
 
     def escalation_query_by_organizationid_length(self,
                                                   orgid_list):
@@ -145,14 +332,10 @@ class Api(object):
             orgid_list -- list of org ids
         '''
         array_of_orgids = self.client.factory.create('ArrayOfstring')
-        if isinstance(orgid_list, list):
-            for orgid in orgid_list:
-                array_of_orgids.string.append(orgid)
-        else:
-            # Do nothing.
-            pass
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
 
-        return self.client.service.EscalationQueryByOrganizationIdLength(array_of_orgids)
+        return self.request('escalation_query_by_organizationid_length', array_of_orgids)
 
     def escalation_type_query_by_id(self,
                                     escalation_type_id_list):
@@ -162,14 +345,10 @@ class Api(object):
             escalationid_list -- list of escalation ids
         '''
         array_of_escalation_type_ids = self.client.factory.create('ArrayOfstring')
-        if isinstance(escalation_type_id_list, list):
-            for escalation_type_id in escalation_type_id_list:
-                array_of_escalation_type_ids.string.append(escalation_type_id)
-        else:
-            # Do nothing.
-            pass
+        for escalation_type_id in escalation_type_id_list:
+            array_of_escalation_type_ids.string.append(escalation_type_id)
 
-        return self.client.service.EscalationTypeQueryById(array_of_escalation_type_ids)
+        return self.request('escalation_type_query_by_id', array_of_escalation_type_ids)
 
     def escalation_type_query_by_name(self,
                                       escalation_type_name_list):
@@ -179,14 +358,10 @@ class Api(object):
             escalation_type_name_list -- list of escalation names
         '''
         array_of_escalation_type_names = self.client.factory.create('ArrayOfstring')
-        if isinstance(escalation_type_name_list, list):
-            for escalation_type_name in escalation_type_name_list:
-                array_of_escalation_type_names.string.append(escalation_type_name)
-        else:
-            # Do nothing.
-            pass
+        for escalation_type_name in escalation_type_name_list:
+            array_of_escalation_type_names.string.append(escalation_type_name)
 
-        return self.client.service.EscalationTypeQueryByName(array_of_escalation_type_names)
+        return self.request('escalation_type_query_by_name', array_of_escalation_type_names)
 
     def escalation_type_query_by_organizationid(self,
                                                 orgid_list,
@@ -200,16 +375,13 @@ class Api(object):
             length     -- number of orgs to return
         '''
         array_of_orgids = self.client.factory.create('ArrayOfstring')
-        if isinstance(orgid_list, list):
-            for orgid in orgid_list:
-                array_of_orgids.string.append(orgid)
-        else:
-            # Do nothing.
-            pass
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
 
-        return self.client.service.EscalationTypeQueryByOrganizationId(array_of_orgids,
-                                                                       index,
-                                                                       length)
+        return self.request('escalation_type_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
 
     def escalation_type_query_by_organizationid_length(self,
                                                        orgid_list):
@@ -219,14 +391,10 @@ class Api(object):
             orgid_list -- list of org ids
         '''
         array_of_orgids = self.client.factory.create('ArrayOfstring')
-        if isinstance(orgid_list, list):
-            for orgid in orgid_list:
-                array_of_orgids.string.append(orgid)
-        else:
-            # Do nothing.
-            pass
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
 
-        return self.client.service.EscalationTypeQueryByOrganizationIdLength(array_of_orgids)
+        return self.request('escalation_type_query_by_organizationid_length', array_of_orgids)
 
     def escalation_update(self):
         pass
@@ -241,39 +409,29 @@ class Api(object):
 
     def import_cancel(self,
                       importid_list):
-        #TODO - Test
         ''' Cancels Import by Import Id.
 
             Keyword arguments:
             importid_list -- list of import ids
         '''
         array_of_importids = self.client.factory.create('ArrayOfstring')
-        if isinstance(importid_list, list):
-            for importid in importid_list:
-                array_of_importids.string.append(importid)
-        else:
-            # Do nothing.
-            pass
+        for importid in importid_list:
+            array_of_importids.string.append(importid)
 
-        return self.client.service.ImportCancel(array_of_importids)
+        return self.request('import_cancel', array_of_importids)
 
     def import_confirm(self,
                        importid_list):
-        #TODO - Test
         ''' Confirms Import by Import Id.
 
             Keyword arguments:
             importid_list -- list of import ids
         '''
         array_of_importids = self.client.factory.create('ArrayOfstring')
-        if isinstance(importid_list, list):
-            for importid in importid_list:
-                array_of_importids.string.append(importid)
-        else:
-            # Do nothing.
-            pass
+        for importid in importid_list:
+            array_of_importids.string.append(importid)
 
-        return self.client.service.ImportConfirm(array_of_importids)
+        return self.request('import_confirm', array_of_importids)
 
     def import_create(self):
         pass
@@ -322,6 +480,7 @@ class Api(object):
         for member in member_list:
             member_object = self.client.factory.create('Member')
             contact_methods = self.client.factory.create('ArrayOfContactMethod')
+            custom_fields = self.client.factory.create('ArrayOfMemberCustomField')
             member_dict = utils.lower_keys(member)
             for k, v in member_dict.items():
                 member_object.Username = member_dict.get('username', None)
@@ -346,43 +505,65 @@ class Api(object):
             for contact_method_email in utils.find_key('contactmethodemail', member_dict):
                 contact_method_object = self.client.factory.create('ContactMethod')
                 contact_method_email_object = self.client.factory.create('ContactMethodEmail')
-                contact_method_email_object.Label = contact_method_email.get('label')
-                contact_method_email_object.Qualifier = contact_method_email.get('qualifier')
-                contact_method_email_object.Ordinal = contact_method_email.get('ordinal')
-                contact_method_email_object.EmailAddress = contact_method_email.get('emailaddress')
+                contact_method_email_object._Label = contact_method_email.get('label', None)
+                contact_method_email_object.Qualifier = contact_method_email.get('qualifier', None)
+                contact_method_email_object.Ordinal = contact_method_email.get('ordinal', None)
+                contact_method_email_object.EmailAddress = contact_method_email.get('emailaddress', None)
                 contact_methods.ContactMethod.append(contact_method_object)
                 contact_method_object.ContactMethodEmail = contact_method_email_object
-
-            for contact_method_phone in utils.find_key('contactmethodphone', member_dict):
-                contact_method_object = self.client.factory.create('ContactMethod')
-                contact_method_phone_object = self.client.factory.create('ContactMethodPhone')
-                contact_method_phone_object.Label = contact_method_phone.get('label')
-                contact_method_phone_object.Qualifier = contact_method_phone.get('qualifier')
-                contact_method_phone_object.Ordinal = contact_method_phone.get('ordinal')
-                contact_method_phone_object.PhoneNum = contact_method_phone.get('phonenum')
-                contact_method_object.ContactMethodPhone = contact_method_phone_object
-                contact_methods.ContactMethod.append(contact_method_object)
 
             for contact_method_fax in utils.find_key('contactmethodfax', member_dict):
                 contact_method_object = self.client.factory.create('ContactMethod')
                 contact_method_fax_object = self.client.factory.create('ContactMethodFax')
-                contact_method_fax_object.Label = contact_method_fax.get('label')
-                contact_method_fax_object.Qualifier = contact_method_fax.get('qualifier')
-                contact_method_fax_object.Ordinal = contact_method_fax.get('ordinal')
-                contact_method_fax_object.PhoneNum = contact_method_fax.get('phonenum')
+                contact_method_fax_object._Label = contact_method_fax.get('label', None)
+                contact_method_fax_object.Qualifier = contact_method_fax.get('qualifier', None)
+                contact_method_fax_object.Ordinal = contact_method_fax.get('ordinal', None)
+                contact_method_fax_object.PhoneNum = contact_method_fax.get('phonenum', None)
                 contact_method_object.ContactMethodFax = contact_method_fax_object
                 contact_methods.ContactMethod.append(contact_method_object)
 
-                member_object.MemberCustomFields = member_dict.get(
-                    'membercustomfields', None)
-            member_object.ContactMethods = contact_methods
-            members.Member.append(member_object)
-        print members
+            for contact_method_pager in utils.find_key('contactmethodpager', member_dict):
+                contact_method_object = self.client.factory.create('ContactMethod')
+                contact_method_pager_object = self.client.factory.create('ContactMethodPager')
+                contact_method_pager_object._Label = contact_method_pager.get('label', None)
+                contact_method_pager_object.Qualifier = contact_method_pager.get('qualifier', None)
+                contact_method_pager_object.Ordinal = contact_method_pager.get('ordinal', None)
+                contact_method_pager_object.PhoneNum = contact_method_pager.get('pagernum', None)
+                contact_method_pager_object.PagerAccessCode = contact_method_pager.get('pageraccesscode', None)
+                contact_method_object.ContactMethodPager = contact_method_pager_object
+                contact_methods.ContactMethod.append(contact_method_object)
 
-        # try:
-        #     return self.client.service.MemberCreate(members)
-        # except suds.WebFault as e:
-        #     return e.fault.detail
+            for contact_method_phone in utils.find_key('contactmethodphone', member_dict):
+                contact_method_object = self.client.factory.create('ContactMethod')
+                contact_method_phone_object = self.client.factory.create('ContactMethodPhone')
+                contact_method_phone_object._Label = contact_method_phone.get('label', None)
+                contact_method_phone_object.Qualifier = contact_method_phone.get('qualifier', None)
+                contact_method_phone_object.Ordinal = contact_method_phone.get('ordinal', None)
+                contact_method_phone_object.PhoneNum = contact_method_phone.get('phonenum', None)
+                contact_method_object.ContactMethodPhone = contact_method_phone_object
+                contact_methods.ContactMethod.append(contact_method_object)
+
+            for contact_method_sms in utils.find_key('contactmethodsms', member_dict):
+                contact_method_object = self.client.factory.create('ContactMethod')
+                contact_method_sms_object = self.client.factory.create('ContactMethodSMS')
+                contact_method_sms_object._Label = contact_method_sms.get('label', None)
+                contact_method_sms_object.Qualifier = contact_method_sms.get('qualifier', None)
+                contact_method_sms_object.Ordinal = contact_method_sms.get('ordinal', None)
+                contact_method_sms_object.PhoneNum = contact_method_sms.get('phonenum', None)
+                contact_method_object.ContactMethodSMS = contact_method_sms_object
+                contact_methods.ContactMethod.append(contact_method_object)
+
+            for custom_field in utils.find_key('membercustomfield', member_dict):
+                custom_field_object = self.client.factory.create('MemberCustomField')
+                custom_field_object.Value = custom_field.get('value', None)
+                custom_field_object.OrganizationCustomFieldId = custom_field.get('organizationcustomfieldid')
+                custom_fields.MemberCustomField.append(custom_field_object)
+
+            member_object.ContactMethods = contact_methods
+            member_object.MemberCustomFields = custom_fields
+            members.Member.append(member_object)
+
+        return self.request('member_create', members)
 
     def member_custom_field_simpleset(self):
         pass
@@ -493,7 +674,7 @@ class Api(object):
             orgid_string -- org id string
 
         '''
-        return self.client.service.AvailableContactMethodQueryByOrganizationId(orgid_string)
+        return self.request('available_contact_method_query_by_organizationid', orgid_string)
 
     def billing_plan_query_by_organizationid(self,
                                              orgid_string):
@@ -502,7 +683,7 @@ class Api(object):
             Keyword arguments:
             orgid_string -- org id string
         '''
-        return self.client.service.BillingPlanQueryByOrganizationId(orgid_string)
+        return self.request('billing_plan_query_by_organizationid', orgid_string)
 
     def organization_create(self):
         pass
@@ -526,7 +707,6 @@ class Api(object):
                                                           orgid_list,
                                                           index=0,
                                                           length=300):
-        #TODO Deal with length - 300 limit
         ''' Returns Custom Fields
 
             Keyword arguments:
@@ -536,16 +716,13 @@ class Api(object):
 
         '''
         array_of_orgids = self.client.factory.create('ArrayOfstring')
-        if isinstance(orgid_list, list):
-            for orgid in orgid_list:
-                array_of_orgids.string.append(orgid)
-        else:
-            # Do nothing.
-            pass
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
 
-        return self.client.service.OrganizationCustomFieldQueryByOrganizationId(array_of_orgids,
-                                                                                index,
-                                                                                length)
+        return self.request('organization_custom_field_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
 
     def organization_custom_field_query_by_organizationid_length(self,
                                                                  orgid_list):
@@ -555,14 +732,10 @@ class Api(object):
             orgid_list -- list of org ids
         '''
         array_of_orgids = self.client.factory.create('ArrayOfstring')
-        if isinstance(orgid_list, list):
-            for orgid in orgid_list:
-                array_of_orgids.string.append(orgid)
-        else:
-            # Do nothing.
-            pass
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
 
-        return self.client.service.OrganizationCustomFieldQueryByOrganizationIdLength(array_of_orgids)
+        return self.request('organization_custom_field_query_by_organizationid_length', array_of_orgids)
 
     def organization_custom_field_query_by_organizationid_name(self,
                                                                orgid_list,
@@ -582,10 +755,11 @@ class Api(object):
         for orgid in orgid_list:
             array_of_orgids.string.append(orgid)
 
-        return self.client.service.OrganizationCustomFieldQueryByOrganizationIdName(array_of_orgids,
-                                                                                    name,
-                                                                                    index,
-                                                                                    length)
+        return self.request('organization_custom_field_query_by_organizationid_name',
+                            array_of_orgids,
+                            name,
+                            index,
+                            length)
 
     def organization_custom_field_query_by_organizationid_name_length(self,
                                                                       orgid_list,
@@ -596,15 +770,12 @@ class Api(object):
             orgid_list -- list of org ids
         '''
         array_of_orgids = self.client.factory.create('ArrayOfstring')
-        if isinstance(orgid_list, list):
-            for orgid in orgid_list:
-                array_of_orgids.string.append(orgid)
-        else:
-            # Do nothing.
-            pass
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
 
-        return self.client.service.OrganizationCustomFieldQueryByOrganizationIdName(array_of_orgids,
-                                                                                    custom_field_name)
+        return self.request('organization_custom_field_query_by_organizationid_name_length',
+                            array_of_orgids,
+                            custom_field_name)
 
     def organization_custom_field_query_by_organizationid_type(self,
                                                                orgid_list,
@@ -620,21 +791,18 @@ class Api(object):
             length            -- number of custom fields to return
         '''
         array_of_orgids = self.client.factory.create('ArrayOfstring')
-        if isinstance(orgid_list, list):
-            for orgid in orgid_list:
-                array_of_orgids.string.append(orgid)
-        else:
-            # Do nothing.
-            pass
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
 
-        return self.client.service.OrganizationCustomFieldQueryByOrganizationIdType(array_of_orgids,
-                                                                                    custom_field_type,
-                                                                                    index,
-                                                                                    length)
+        return self.request('organization_custom_field_query_by_organizationid_type',
+                            array_of_orgids,
+                            custom_field_type,
+                            index,
+                            length)
 
     def organization_custom_field_query_by_organizationid_type_length(self,
-                                                               orgid_list,
-                                                               custom_field_type):
+                                                                      orgid_list,
+                                                                      custom_field_type):
         ''' Returns Length of Custom Fields by Org Id and Custom Field Type
 
             Keyword arguments:
@@ -642,15 +810,12 @@ class Api(object):
             custom_field_type -- custom field type
         '''
         array_of_orgids = self.client.factory.create('ArrayOfstring')
-        if isinstance(orgid_list, list):
-            for orgid in orgid_list:
-                array_of_orgids.string.append(orgid)
-        else:
-            # Do nothing.
-            pass
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
 
-        return self.client.service.OrganizationCustomFieldQueryByOrganizationIdTypeLength(array_of_orgids,
-                                                                                    custom_field_type)
+        return self.request('organization_custom_field_query_by_organizationid_type_length',
+                            array_of_orgids,
+                            custom_field_type)
 
     def organization_custom_field_update(self):
         pass
@@ -668,7 +833,8 @@ class Api(object):
         for eventid in eventid_list:
             array_of_eventids.string.append(eventid)
 
-        return self.client.service.OrganizationEventTypeQueryById(array_of_eventids)
+        return self.request('organization_event_type_query_by_id',
+                            array_of_eventids)
 
     def organization_event_type_query_by_organizationid(self,
                                                         orgid_list,
@@ -686,9 +852,10 @@ class Api(object):
         for orgid in orgid_list:
             array_of_orgids.string.append(orgid)
 
-        return self.client.service.OrganizationEventTypeQueryByOrganizationId(array_of_orgids,
-                                                                              index,
-                                                                              length)
+        return self.request('organization_event_type_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
 
     def organization_event_type_query_by_organizationid_length(self,
                                                                orgid_list):
@@ -702,7 +869,8 @@ class Api(object):
         for orgid in orgid_list:
             array_of_orgids.string.append(orgid)
 
-        return self.client.service.OrganizationEventTypeQueryByOrganizationIdLength(array_of_orgids)
+        return self.request('organization_event_type_query_by_organizationid_length',
+                            array_of_orgids)
 
     def organization_query_by_id(self,
                                  orgid_list):
@@ -716,7 +884,7 @@ class Api(object):
         for orgid in orgid_list:
             array_of_orgids.string.append(orgid)
 
-        return self.client.service.OrganizationQueryById(array_of_orgids)
+        return self.request('organization_query_by_id', array_of_orgids)
 
     def organization_query_children(self,
                                     orgid_string,
@@ -729,9 +897,10 @@ class Api(object):
             index      -- starting index
             length     -- number of orgs to return
         '''
-        return self.client.service.OrganizationQueryChildren(orgid_string,
-                                                             index,
-                                                             length)
+        return self.request('organization_query_children',
+                            orgid_string,
+                            index,
+                            length)
 
     def organization_query_children_length(self,
                                            orgid_string,
@@ -744,16 +913,15 @@ class Api(object):
             index      -- starting index
             length     -- number of orgs to return
         '''
-        return self.client.service.OrganizationQueryChildrenLength(orgid_string,
-                                                                   index,
-                                                                   length)
+        return self.request('organization_query_children_length',
+                            orgid_string,
+                            index,
+                            length)
 
     def organization_query_root(self):
         '''Returns OrganizationId, Events and Roles.'''
-        org = self.client.service.OrganizationQueryRoot()
 
-        return org
-
+        return self.request('organization_query_root')
 
     def role_query_by_id(self,
                          roleid_list):
@@ -767,7 +935,8 @@ class Api(object):
         for roleid in roleid_list:
             array_of_roleids.string.append(roleid)
 
-        return self.client.service.RoleQueryById(array_of_roleids)
+        return self.request('organization_query_children_length',
+                            array_of_roleids)
 
     # ===========================================================================
     # End Organization Methods
