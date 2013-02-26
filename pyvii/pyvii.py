@@ -90,10 +90,10 @@ class Api(object):
                             'import_confirm': service.ImportConfirm,
                             'import_create': service.ImportCreate,
                             'import_definition_create': service.ImportDefinitionCreate,
-                            'import_definition_delet_by_id': service.ImportDefinitionDeleteById,
+                            'import_definition_delete_by_id': service.ImportDefinitionDeleteById,
                             'import_definition_query_by_id': service.ImportDefinitionQueryById,
-                            'import_definition_query_by_oganizationid': service.ImportDefinitionQueryByOrganizationId,
-                            'import_definition_query_by_organizationi_length': service.ImportDefinitionQueryByOrganizationIdLength,
+                            'import_definition_query_by_organizationid': service.ImportDefinitionQueryByOrganizationId,
+                            'import_definition_query_by_organizationid_length': service.ImportDefinitionQueryByOrganizationIdLength,
                             'import_exception_query_by_importid': service.ImportExceptionQueryByImportId,
                             'import_exception_query_by_importid_length': service.ImportExceptionQueryByImportIdLength,
                             'import_query_by_id': service.ImportQueryById,
@@ -124,7 +124,6 @@ class Api(object):
                             'timezone_query_by_id': service.TimeZoneQueryById,
                             'available_contact_method_query_by_organizationid': service.AvailableContactMethodQueryByOrganizationId,
                             'billing_plan_query_by_organizationid': service.BillingPlanQueryByOrganizationId,
-                            'organization_create': service.OrganizationCreate,
                             'organization_custom_field_create': service.OrganizationCustomFieldCreate,
                             'organization_custom_field_delete_by_id': service.OrganizationCustomFieldDeleteById,
                             'organization_custom_field_query_by_id': service.OrganizationCustomFieldQueryById,
@@ -187,7 +186,7 @@ class Api(object):
                             'team_role_query_by_id': service.TeamRoleQueryById,
                             'team_role_query_by_name': service.TeamRoleQueryByName,
                             'team_role_query_by_organizationid': service.TeamRoleQueryByOrganizationId,
-                            'team_role_query_by_organizationidlength': service.TeamRoleQueryByOrganizationIdLength,
+                            'team_role_query_by_organizationid_length': service.TeamRoleQueryByOrganizationIdLength,
                             'team_role_update': service.TeamRoleUpdate,
                             'team_update': service.TeamUpdate
                             }
@@ -412,32 +411,136 @@ class Api(object):
     def import_definition_create(self):
         pass
 
-    def import_definition_delete_by_id(self):
-        pass
+    def import_definition_delete_by_id(self, importdefid_list):
+        ''' Deletes Import Definition by Import Id.
 
-    def import_definition_query_by_id(self):
-        pass
+            Keyword arguments:
+            importdefid_list -- list of import definition ids
+        '''
+        array_of_importdefids = self.client.factory.create('ArrayOfstring')
+        for importdefid in importdefid_list:
+            array_of_importdefids.string.append(importdefid)
 
-    def import_definition_query_by_organizationid(self):
-        pass
+        return self.request('import_definition_delete_by_id', array_of_importdefids)
 
-    def import_definition_query_by_organizationid_length(self):
-        pass
+    def import_definition_query_by_id(self, importdefid_list):
+        ''' Query Import Definition by Id.
 
-    def import_exception_query_by_importid(self):
-        pass
+            Keyword arguments:
+            importdefid_list -- list of import definition ids
+        '''
+        array_of_importdefids = self.client.factory.create('ArrayOfstring')
+        for importdefid in importdefid_list:
+            array_of_importdefids.string.append(importdefid)
 
-    def import_exception_query_by_importid_length(self):
-        pass
+        return self.request('import_definition_query_by_id', array_of_importdefids)
 
-    def import_query_by_id(self):
-        pass
+    def import_definition_query_by_organizationid(self, orgid_list, index=0, length=300):
+        ''' Import Definition Query by Organization Id
 
-    def import_query_by_organizationid(self):
-        pass
+            Keyword arguments:
+            orgid_list -- list of org ids
+            index      -- starting index
+            length     -- number of orgs to return
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
 
-    def import_query_by_organizationid_length(self):
-        pass
+        return self.request('import_definition_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
+
+    def import_definition_query_by_organizationid_length(self, orgid_list):
+        ''' Returnes Length Of Import Definition Query by Organization Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('import_definition_query_by_organizationid_length',
+                            array_of_orgids)
+
+    def import_exception_query_by_importid(self, importid_list, index=0, length=300):
+        ''' Import Exception Query by Import Id
+
+            Keyword arguments:
+            importid_list -- list of import ids
+            index         -- starting index
+            length        -- number of import exceptions to return
+        '''
+        array_of_importids = self.client.factory.create('ArrayOfstring')
+        for importid in importid_list:
+            array_of_importids.string.append(importid)
+
+        return self.request('import_definition_query_by_organizationid',
+                            array_of_importids,
+                            index,
+                            length)
+
+    def import_exception_query_by_importid_length(self, importid_list):
+        ''' Returns Length Of Import Exception Query by Import Id
+
+            Keyword arguments:
+            importid_list -- list of import ids
+        '''
+        array_of_importids = self.client.factory.create('ArrayOfstring')
+        for importid in importid_list:
+            array_of_importids.string.append(importid)
+
+        return self.request('import_exception_query_by_importid_length',
+                            array_of_importids)
+
+    def import_query_by_id(self, orgid_list, include_files=False):
+        ''' Import Query by Id
+
+            Keyword arguments:
+            orgid_list    -- list of org ids
+            index         -- starting index
+            length        -- number of imports to return
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('import_query_by_id',
+                            array_of_orgids,
+                            include_files)
+
+    def import_query_by_organizationid(self, orgid_list, include_files=False, index=0, length=300):
+        ''' Import Query by Organization Id
+
+            Keyword arguments:
+            orgid_list    -- list of org ids
+            index         -- starting index
+            length        -- number of imports to return
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('import_query_by_organizationid',
+                            array_of_orgids,
+                            include_files,
+                            index,
+                            length)
+
+    def import_query_by_organizationid_length(self, orgid_list):
+        ''' Returns Length Of Import Query by Organization Id
+
+            Keyword arguments:
+            orgid_list    -- list of org ids
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('import_query_by_organizationid_length',
+                            array_of_orgids)
 
     # ===========================================================================
     # End Import Methods
@@ -993,17 +1096,53 @@ class Api(object):
         '''
         return self.request('billing_plan_query_by_organizationid', orgid_string)
 
-    def organization_create(self):
-        pass
+    def organization_custom_field_create(self, org_customfield_list):
+        ''' Creates Organization Custom Field
 
-    def organization_custom_field_create(self):
-        pass
+            Keyword arguments:
+            org_customfield_list -- list of org custom fields
+        '''
+        array_of_org_customfields = self.client.factory.create('ArrayOfOrganizationCustomField')
 
-    def organization_custom_field_delete_by_id(self):
-        pass
+        for org_custom_field in org_customfield_list:
+            org_custom_field_object = self.client.factory.create('OrganizationCustomField')
+            org_custom_field_dict = utils.lower_keys(org_custom_field)
+            org_custom_field_object.Name = org_custom_field_dict.get('name', None)
+            org_custom_field_object.SourceIdentifier = org_custom_field_dict.get('sourceidentifier', None)
+            org_custom_field_object.Type = org_custom_field_dict.get('type', None)
+            org_custom_field_object.AdminAccess = org_custom_field_dict.get('adminaccess', None)
+            org_custom_field_object.UserAccess = org_custom_field_dict.get('useraccess', None)
+            org_custom_field_object.Searchable = org_custom_field_dict.get('searchable', None)
+            org_custom_field_object.SecurityEnabled = org_custom_field_dict.get('securityenabled', None)
+            org_custom_field_object.OrganizationId = org_custom_field_dict.get('organizationid', None)
+            array_of_org_customfields.OrganizationCustomField.append(org_custom_field_object)
 
-    def organization_custom_field_query_by_id(self):
-        pass
+        return self.request('organization_custom_field_create',
+                            array_of_org_customfields)
+
+    def organization_custom_field_delete_by_id(self, org_customfield_list):
+        ''' Deletes Custom Field By Id
+
+            Keyword arguments:
+            org_customfield_list -- list of org custom field ids
+        '''
+        array_of_customfieldids = self.client.factory.create('ArrayOfstring')
+        for org_customfieldid in org_customfield_list:
+            array_of_customfieldids.string.append(org_customfieldid)
+
+        return self.request('organization_custom_field_delete_by_id', array_of_customfieldids)
+
+    def organization_custom_field_query_by_id(self, org_customfield_list):
+        ''' Query Organization Custom Field By Id
+
+            Keyword arguments:
+            org_customfield_list -- list of org custom field ids
+        '''
+        array_of_customfieldids = self.client.factory.create('ArrayOfstring')
+        for org_customfieldid in org_customfield_list:
+            array_of_customfieldids.string.append(org_customfieldid)
+
+        return self.request('organization_custom_field_query_by_id', array_of_customfieldids)
 
     def organization_custom_field_query_by_organizationid(self,
                                                           orgid_list,
@@ -1119,8 +1258,32 @@ class Api(object):
                             array_of_orgids,
                             custom_field_type)
 
-    def organization_custom_field_update(self):
-        pass
+    def organization_custom_field_update(self, org_customfield_list, sync):
+        ''' Updates Organization Custom Field
+
+            Keyword arguments:
+            org_customfield_list -- list of org custom fields
+            sync        -- boolean (true/false)
+        '''
+        array_of_org_customfields = self.client.factory.create('ArrayOfOrganizationCustomField')
+
+        for org_custom_field in org_customfield_list:
+            org_custom_field_object = self.client.factory.create('OrganizationCustomField')
+            org_custom_field_dict = utils.lower_keys(org_custom_field)
+            org_custom_field_object.OrganizationCustomFieldId = org_custom_field_dict.get('organizationcustomfieldid', None)
+            org_custom_field_object.Name = org_custom_field_dict.get('name', None)
+            org_custom_field_object.SourceIdentifier = org_custom_field_dict.get('sourceidentifier', None)
+            org_custom_field_object.Type = org_custom_field_dict.get('type', None)
+            org_custom_field_object.AdminAccess = org_custom_field_dict.get('adminaccess', None)
+            org_custom_field_object.UserAccess = org_custom_field_dict.get('useraccess', None)
+            org_custom_field_object.Searchable = org_custom_field_dict.get('searchable', None)
+            org_custom_field_object.SecurityEnabled = org_custom_field_dict.get('securityenabled', None)
+            org_custom_field_object.OrganizationId = org_custom_field_dict.get('organizationid', None)
+            array_of_org_customfields.OrganizationCustomField.append(org_custom_field_object)
+
+        return self.request('organization_custom_field_update',
+                            array_of_org_customfields,
+                            sync)
 
     def organization_event_type_query_by_id(self,
                                             eventid_list):
@@ -1186,7 +1349,8 @@ class Api(object):
         for orgid in orgid_list:
             array_of_orgids.string.append(orgid)
 
-        return self.request('organization_query_by_id', array_of_orgids)
+        return self.request('organization_query_by_id',
+                            array_of_orgids)
 
     def organization_query_children(self,
                                     orgid_string,
@@ -1205,20 +1369,15 @@ class Api(object):
                             length)
 
     def organization_query_children_length(self,
-                                           orgid_string,
-                                           index=0,
-                                           length=300):
+                                           orgid_string):
+
         ''' Returns Length of Organization Sub-Orgs
 
             Keyword arguments:
             orgid_list -- list of org ids
-            index      -- starting index
-            length     -- number of orgs to return
         '''
         return self.request('organization_query_children_length',
-                            orgid_string,
-                            index,
-                            length)
+                            orgid_string)
 
     def organization_query_root(self):
         '''Returns OrganizationId, Events and Roles.'''
@@ -1254,17 +1413,65 @@ class Api(object):
     def report_delete_by_id(self):
         pass
 
-    def report_query_by_id(self):
-        pass
+    def report_query_by_id(self, reportid_list):
+        ''' Query Report By Id
 
-    def report_type_query_by_id(self):
-        pass
+            Keyword arguments:
+            orgid_list -- list of org ids
+        '''
+        array_of_reportids = self.client.factory.create('ArrayOfstring')
 
-    def report_type_query_by_organizationid(self):
-        pass
+        for reportid in reportid_list:
+            array_of_reportids.string.append(reportid)
 
-    def report_type_query_by_organizationid_length(self):
-        pass
+        return self.request('report_query_by_id',
+                            array_of_reportids)
+
+    def report_type_query_by_id(self, reporttypeid_list):
+        ''' Query Report Type By Id
+
+            Keyword arguments:
+            reporttypeid_list -- list of report type ids
+        '''
+        array_of_reporttypeids = self.client.factory.create('ArrayOfstring')
+
+        for reporttypeid in reporttypeid_list:
+            array_of_reporttypeids.string.append(reporttypeid)
+
+        return self.request('report_type_query_by_id',
+                            array_of_reporttypeids)
+
+    def report_type_query_by_organizationid(self, orgid_list, index=0, length=300):
+        ''' Query Report Types By Organization Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+            index      -- starting index
+            length     -- number of report types to return
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('report_type_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
+
+    def report_type_query_by_organizationid_length(self, orgid_list):
+        ''' Returns Length Of Query Report Types By Organization Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('report_type_query_by_organizationid_length',
+                            array_of_orgids)
 
     # ===========================================================================
     # End Report Methods
@@ -1280,23 +1487,93 @@ class Api(object):
     def scenario_create(self):
         pass
 
-    def scenario_delete_by_id(self):
-        pass
+    def scenario_delete_by_id(self, scenarioid_list):
+        ''' Delete Scenario By Id
 
-    def scenario_query_by_accesscode(self):
-        pass
+            Keyword arguments:
+            scenarioid_list -- list of scenario ids
+        '''
+        array_of_scenarioids = self.client.factory.create('ArrayOfstring')
 
-    def scenario_query_by_id(self):
-        pass
+        for scenarioid in scenarioid_list:
+            array_of_scenarioids.string.append(scenarioid)
 
-    def scenario_query_by_name(self):
-        pass
+        return self.request('scenario_delete_by_id',
+                            array_of_scenarioids)
 
-    def scenario_query_by_organizationid(self):
-        pass
+    def scenario_query_by_accesscode(self, accesscode_list):
+        ''' Query Scenario By Access Code
 
-    def scenario_query_by_organizationid_length(self):
-        pass
+            Keyword arguments:
+            scenarioid_list -- list of scenario ids
+        '''
+        array_of_access_codes = self.client.factory.create('ArrayOfstring')
+
+        for access_code in accesscode_list:
+            array_of_access_codes.string.append(access_code)
+
+        return self.request('scenario_query_by_accesscode',
+                            array_of_access_codes)
+
+    def scenario_query_by_id(self, scenarioid_list):
+        ''' Query Scenario By Id
+
+            Keyword arguments:
+            scenarioid_list -- list of scenario ids
+        '''
+        array_of_scenarioids = self.client.factory.create('ArrayOfstring')
+
+        for scenarioid in scenarioid_list:
+            array_of_scenarioids.string.append(scenarioid)
+
+        return self.request('scenario_query_by_id',
+                            array_of_scenarioids)
+
+    def scenario_query_by_name(self, scenario_name_list):
+        ''' Query Scenario By Name
+
+            Keyword arguments:
+            scenario_name_list -- list of scenario names
+        '''
+        array_of_scenario_names = self.client.factory.create('ArrayOfstring')
+
+        for scenario_name in scenario_name_list:
+            array_of_scenario_names.string.append(scenario_name)
+
+        return self.request('scenario_query_by_name',
+                            array_of_scenario_names)
+
+    def scenario_query_by_organizationid(self, orgid_list, index=0, length=300):
+        ''' Query Scenarios By Organization Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+            index      -- starting index
+            length     -- number of scenarios to return
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('scenario_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
+
+    def scenario_query_by_organizationid_length(self, orgid_list):
+        ''' Returns Length Of Query Scenarios By Organization Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('scenario_query_by_organizationid_length',
+                            array_of_orgids)
 
     # ===========================================================================
     # End Scenario Methods
@@ -1386,11 +1663,40 @@ class Api(object):
     def team_query_by_name(self):
         pass
 
-    def team_query_by_organizationid(self):
-        pass
+    def team_query_by_organizationid(self,
+                                     orgid_list,
+                                     index=0,
+                                     length=300):
+        ''' Query Teams By Organization Id
 
-    def team_query_by_organizationid_length(self):
-        pass
+            Keyword arguments:
+            orgid_list -- list of org ids
+            index      -- starting index
+            length     -- number of teams to return
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('team_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
+
+    def team_query_by_organizationid_length(self, orgid_list):
+        ''' Query Teams By Organization Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('team_query_by_organizationid_length',
+                            array_of_orgids)
 
     def team_query_by_sourceidentifier(self):
         pass
@@ -1401,23 +1707,109 @@ class Api(object):
     def team_query_by_subteamid_length(self):
         pass
 
-    def team_role_create(self):
-        pass
+    def team_role_create(self,
+                         team_role_list):
+        ''' Creates Team Roles
 
-    def team_role_delete_by_id(self):
-        pass
+            Keyword arguments:
+            team_role_list -- list of team roles
+        '''
+        array_of_team_roles = self.client.factory.create('ArrayOfTeamRole')
 
-    def team_role_query_by_id(self):
-        pass
+        for team_role in team_role_list:
+            team_role_object = self.client.factory.create('TeamRole')
+            team_role_dict = utils.lower_keys(team_role)
+            team_role_object.TeamRoleId = team_role_dict.get('teamroleid', None)
+            team_role_object.Name = team_role_dict.get('name', None)
+            team_role_object.CanManage = team_role_dict.get('canmanage', False)
+            team_role_object.CanActivate = team_role_dict.get('canactivate', False)
+            team_role_object.CanView = team_role_dict.get('canview', False)
+            team_role_object.OrganizationId = team_role_dict.get('organizationid', None)
+            array_of_team_roles.TeamRole.append(team_role_object)
 
-    def team_role_query_by_name(self):
-        pass
+        return self.request('team_role_create',
+                            array_of_team_roles)
 
-    def team_role_query_by_organizationid(self):
-        pass
+    def team_role_delete_by_id(self,
+                               team_role_id_list):
+        ''' Delete Team Roles By Id
 
-    def team_role_query_by_organizationidlength(self):
-        pass
+            Keyword arguments:
+            team_role_id_list -- list of team role ids
+        '''
+        array_of_team_role_ids = self.client.factory.create('ArrayOfstring')
+
+        for team_role_id in team_role_id_list:
+            array_of_team_role_ids.string.append(team_role_id)
+
+        return self.request('team_role_delete_by_id',
+                            array_of_team_role_ids)
+
+    def team_role_query_by_id(self,
+                              team_role_id_list):
+        ''' Query Team Roles By Id
+
+            Keyword arguments:
+            team_role_id_list -- list of team role ids
+        '''
+        array_of_team_role_ids = self.client.factory.create('ArrayOfstring')
+
+        for team_role_id in team_role_id_list:
+            array_of_team_role_ids.string.append(team_role_id)
+
+        return self.request('team_role_query_by_id',
+                            array_of_team_role_ids)
+
+    def team_role_query_by_name(self,
+                                team_role_name_list):
+        ''' Query Team Roles By Name
+
+            Keyword arguments:
+            team_role_name_list -- list of team role names
+        '''
+        array_of_team_role_names = self.client.factory.create('ArrayOfstring')
+
+        for team_role_name in team_role_name_list:
+            array_of_team_role_names.string.append(team_role_name)
+
+        return self.request('team_role_query_by_name',
+                            array_of_team_role_names)
+
+    def team_role_query_by_organizationid(self,
+                                          orgid_list,
+                                          index=0,
+                                          length=300):
+        ''' Query Team Roles By Organization Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+            index      -- starting index
+            length     -- number of team roles to return
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('team_role_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
+
+    def team_role_query_by_organizationid_length(self,
+                                                 orgid_list):
+        ''' Query Team Roles By Organization Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('team_role_query_by_organizationid_length',
+                            array_of_orgids)
 
     def team_role_update(self):
         pass
