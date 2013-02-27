@@ -162,15 +162,11 @@ class Api(object):
                             'team_entry_delete_by_id': service.TeamEntryDeleteById,
                             'team_entry_member_query_by_memberid': service.TeamEntryMemberQueryByMemberId,
                             'team_entry_member_query_by_memberid_length': service.TeamEntryMemberQueryByMemberIdLength,
-                            'team_entry_member_query_by_memberid_teamid': service.TeamEntryMemberQueryByMemberIdTeamId,
                             'team_entry_query_by_id': service.TeamEntryQueryById,
                             'team_entry_query_by_organizationid': service.TeamEntryQueryByOrganizationId,
                             'team_entry_query_by_organizationid_length': service.TeamEntryQueryByOrganizationIdLength,
                             'team_entry_query_by_teamid': service.TeamEntryQueryByTeamId,
                             'team_entry_query_by_teamid_length': service.TeamEntryQueryByTeamIdLength,
-                            'team_entry_subteam_query_by_subteamid': service.TeamEntrySubTeamQueryBySubTeamId,
-                            'team_entry_subteam_query_by_subteamid_length': service.TeamEntrySubTeamQueryBySubTeamIdLength,
-                            'team_entry_subteam_query_by_subteamid_teamid': service.TeamEntrySubTeamQueryBySubTeamIdTeamId,
                             'team_entry_update': service.TeamEntryUpdate,
                             'team_member_query_by_teamid': service.TeamMemberQueryByTeamId,
                             'team_query_by_accesscode': service.TeamQueryByAccessCode,
@@ -1615,53 +1611,172 @@ class Api(object):
     def team_entry_delete_by_id(self):
         pass
 
-    def team_entry_member_query_by_memberid(self):
-        pass
+    def team_entry_member_query_by_memberid(self, memberid_list, index=0, length=300):
+        ''' Query Team Entries By Member Id
 
-    def team_entry_member_query_by_memberid_length(self):
-        pass
+            Keyword arguments:
+            memberid_list -- list of member ids
+            index      -- starting index
+            length     -- number of team entries to return
+        '''
+        array_of_memberids = self.client.factory.create('ArrayOfstring')
 
-    def team_entry_member_query_by_memberid_teamid(self):
-        pass
+        for memberid in memberid_list:
+            array_of_memberids.string.append(memberid)
 
-    def team_entry_query_by_id(self):
-        pass
+        return self.request('team_entry_member_query_by_memberid',
+                            array_of_memberids,
+                            index,
+                            length)
 
-    def team_entry_query_by_organizationid(self):
-        pass
+    def team_entry_member_query_by_memberid_length(self, memberid_list):
+        ''' Returns Length Of Query Team Entries By Member Id
 
-    def team_entry_query_by_organizationid_length(self):
-        pass
+            Keyword arguments:
+            memberid_list -- list of member ids
+            index      -- starting index
+            length     -- number of team entries to return
+        '''
+        array_of_memberids = self.client.factory.create('ArrayOfstring')
 
-    def team_entry_query_by_teamid(self):
-        pass
+        for memberid in memberid_list:
+            array_of_memberids.string.append(memberid)
 
-    def team_entry_query_by_teamid_length(self):
-        pass
+        return self.request('team_entry_member_query_by_memberid_length',
+                            array_of_memberids)
 
-    def team_entry_subteam_query_by_subteamid(self):
-        pass
+    def team_entry_query_by_id(self, team_entryid_list):
+        ''' Query Team Entries By Id
 
-    def team_entry_subteam_query_by_subteamid_length(self):
-        pass
+            Keyword arguments:
+            teamid_list -- list of team ids
+        '''
+        array_of_team_entryids = self.client.factory.create('ArrayOfstring')
 
-    def team_entry_subteam_query_by_subteamid_teamid(self):
-        pass
+        for team_entryid in team_entryid_list:
+            array_of_team_entryids.string.append(team_entryid)
+
+        return self.request('team_entry_query_by_id',
+                            array_of_team_entryids)
+
+    def team_entry_query_by_organizationid(self, teamid_list, index=0, length=300):
+        ''' Query Team Entries By Organization Id
+
+            Keyword arguments:
+            teamid_list -- list of team ids
+            index      -- starting index
+            length     -- number of team entries to return
+        '''
+        array_of_teamids = self.client.factory.create('ArrayOfstring')
+
+        for teamid in teamid_list:
+            array_of_teamids.string.append(teamid)
+
+        return self.request('team_entry_query_by_organizationid',
+                            array_of_teamids,
+                            index,
+                            length)
+
+    def team_entry_query_by_organizationid_length(self, teamid_list):
+        ''' Returns Length Of Query Team Entries By Organization Id
+
+            Keyword arguments:
+            teamid_list -- list of team ids
+        '''
+        array_of_teamids = self.client.factory.create('ArrayOfstring')
+
+        for teamid in teamid_list:
+            array_of_teamids.string.append(teamid)
+
+        return self.request('team_entry_query_by_organizationid_length',
+                            array_of_teamids)
+
+    def team_entry_query_by_teamid(self, teamid_list, index=0, length=300):
+        ''' Query Team Entries By Team Id
+
+            Keyword arguments:
+            teamid_list -- list of team ids
+            index      -- starting index
+            length     -- number of team entries to return
+        '''
+        array_of_teamids = self.client.factory.create('ArrayOfstring')
+
+        for teamid in teamid_list:
+            array_of_teamids.string.append(teamid)
+
+        return self.request('team_entry_query_by_teamid',
+                            array_of_teamids,
+                            index,
+                            length)
+
+    def team_entry_query_by_teamid_length(self, teamid_list):
+        ''' Returns Length Of Query Team Entries By Team Id
+
+            Keyword arguments:
+            teamid_list -- list of team ids
+        '''
+        array_of_teamids = self.client.factory.create('ArrayOfstring')
+
+        for teamid in teamid_list:
+            array_of_teamids.string.append(teamid)
+
+        return self.request('team_entry_query_by_teamid_length',
+                            array_of_teamids)
 
     def team_entry_update(self):
         pass
 
-    def team_member_query_by_teamid(self):
-        pass
+    def team_member_query_by_teamid(self, teamid):
+        ''' Query Team Members By Team Id
 
-    def team_query_by_accesscode(self):
-        pass
+            Keyword arguments:
+            teamid -- team id
+        '''
 
-    def team_query_by_id(self):
-        pass
+        return self.request('team_member_query_by_teamid',
+                            teamid)
 
-    def team_query_by_name(self):
-        pass
+    def team_query_by_accesscode(self, accesscode_list):
+        ''' Query Teams By Access Code
+
+            Keyword arguments:
+            accesscode_list -- list of access codes
+        '''
+        array_of_access_codes = self.client.factory.create('ArrayOfstring')
+
+        for accesscode in accesscode_list:
+            array_of_access_codes.string.append(accesscode)
+
+        return self.request('team_query_by_accesscode',
+                            array_of_access_codes)
+
+    def team_query_by_id(self, teamids_list):
+        ''' Query Teams By Id
+
+            Keyword arguments:
+            teamids_list -- list of team ids
+        '''
+        array_of_teamids = self.client.factory.create('ArrayOfstring')
+
+        for teamid in teamids_list:
+            array_of_teamids.string.append(teamid)
+
+        return self.request('team_query_by_id',
+                            array_of_teamids)
+
+    def team_query_by_name(self, teamname_list):
+        ''' Query Teams By Name
+
+            Keyword arguments:
+            teamname_list -- list of team names
+        '''
+        array_of_teamnames = self.client.factory.create('ArrayOfstring')
+
+        for teamname in teamname_list:
+            array_of_teamnames.string.append(teamname)
+
+        return self.request('team_query_by_name',
+                            array_of_teamnames)
 
     def team_query_by_organizationid(self,
                                      orgid_list,
@@ -1698,14 +1813,52 @@ class Api(object):
         return self.request('team_query_by_organizationid_length',
                             array_of_orgids)
 
-    def team_query_by_sourceidentifier(self):
-        pass
+    def team_query_by_sourceidentifier(self, sourceids_list):
+        ''' Query Teams By Source Identifiers
 
-    def team_query_by_subteamid(self):
-        pass
+            Keyword arguments:
+            sourceids_list -- list of source ids
+        '''
+        array_of_sourceids = self.client.factory.create('ArrayOfstring')
 
-    def team_query_by_subteamid_length(self):
-        pass
+        for sourceid in sourceids_list:
+            array_of_sourceids.string.append(sourceid)
+
+        return self.request('team_query_by_sourceidentifier',
+                            array_of_sourceids)
+
+    def team_query_by_subteamid(self, subteamid_list, index=0, length=300):
+        ''' Query Teams By Sub Team Id
+
+            Keyword arguments:
+            subteamid_list -- list of sub team ids
+            index      -- starting index
+            length     -- number of teams to return
+
+        '''
+        array_of_subteamids = self.client.factory.create('ArrayOfstring')
+
+        for subteamid in subteamid_list:
+            array_of_subteamids.string.append(subteamid)
+
+        return self.request('team_query_by_subteamid',
+                            array_of_subteamids,
+                            index,
+                            length)
+
+    def team_query_by_subteamid_length(self, subteamid_list):
+        ''' Returns Length Of Query Teams By Sub Team Id
+
+            Keyword arguments:
+            subteamid_list -- list of sub team ids
+        '''
+        array_of_subteamids = self.client.factory.create('ArrayOfstring')
+
+        for subteamid in subteamid_list:
+            array_of_subteamids.string.append(subteamid)
+
+        return self.request('team_query_by_subteamid_length',
+                            array_of_subteamids)
 
     def team_role_create(self,
                          team_role_list):
