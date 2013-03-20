@@ -9,14 +9,14 @@ def lower_keys(item):
     return item
 
 
-def find_key(key, value):
-    for k, v in value.iteritems():
+def find_key(key, item):
+    for k, v in item.iteritems():
         if k == key:
             yield v
         elif isinstance(v, dict):
             for result in find_key(key, v):
                 if isinstance(v, dict):
-                    for k, v in value.iteritems():
+                    for k, v in item.iteritems():
                         if k == key:
                             yield v
         elif isinstance(v, list):

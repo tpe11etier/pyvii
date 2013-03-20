@@ -547,7 +547,7 @@ class Api(object):
     # ===========================================================================
 
     def member_create(self, member_list):
-        ''' Creates members.
+        ''' Creates Members.
 
             Keyword arguments:
             member_list -- list of members
@@ -951,7 +951,7 @@ class Api(object):
                             index,
                             length)
 
-    def member_update(self, member_list, sync):
+    def member_update(self, member_list, sync=False):
         ''' Updates Members.
 
             Keyword arguments:
@@ -1403,8 +1403,29 @@ class Api(object):
     # Begin Report Methods
     # ===========================================================================
 
-    def report_create(self):
-        pass
+    def report_create(self, report_list):
+            ''' Create Report
+
+            Keyword arguments:
+            report_list -- list of reports
+        '''
+        array_of_reports = self.client.factory.create('ArrayOfReport')
+        for report in report_list:
+            report_object = self.client.factory.create('Report')
+            report_dict = utils.lower_keys(report)
+            report_object.OutputFormat = report_dict.get('outputformat', None)
+            report_object.Name = report_dict.get('name', None)
+            report_object.ZipOutput = report_dict.get('zipoutput', None)
+            report_object.ReportTypeName = report_dict.get('reporttypename', None)
+            report_object.DeliveryEvent = report_dict.get('deliveryevent', None)
+            report_object.OrganizationId = report_dict.get('organizationid', None)
+            report_object.ReportTypeId = report_dict.get('reporttypeid', None)
+            report_object.TimeZoneId = report_dict.get('timezoneid, None')
+            report_object.ReportParameters = report_dict.get('reportparameters', None)
+            array_of_reports.Report.append(report)
+
+        return self.request('report_create',
+                            array_of_report)
 
     def report_delete_by_id(self):
         pass
