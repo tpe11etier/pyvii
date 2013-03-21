@@ -26,3 +26,5 @@ viimu.props
 *.back
 *.bck
 tester.py
+*.ipynb
+

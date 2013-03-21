@@ -193,10 +193,10 @@ class Api(object):
     def request(self, method, *args):
         ''' Handles all requests.
 
-             Keyword arguments:
-    method -- SOAP method called
-    args   -- SOAP method args
-'''
+            Keyword arguments:
+            method -- SOAP method called
+            args   -- SOAP method args
+        '''
         self.method = method
         self.args = args
         try:
@@ -1404,13 +1404,15 @@ class Api(object):
     # ===========================================================================
 
     def report_create(self, report_list):
-            ''' Create Report
+        ''' Create Report
 
             Keyword arguments:
             report_list -- list of reports
         '''
         array_of_reports = self.client.factory.create('ArrayOfReport')
         for report in report_list:
+            array_of_report_parameters = self.client.factory.create('ArrayOfReportParameter')
+            report_param_object = self.client.factory.create('ReportParameter')
             report_object = self.client.factory.create('Report')
             report_dict = utils.lower_keys(report)
             report_object.OutputFormat = report_dict.get('outputformat', None)
@@ -1420,12 +1422,18 @@ class Api(object):
             report_object.DeliveryEvent = report_dict.get('deliveryevent', None)
             report_object.OrganizationId = report_dict.get('organizationid', None)
             report_object.ReportTypeId = report_dict.get('reporttypeid', None)
-            report_object.TimeZoneId = report_dict.get('timezoneid, None')
-            report_object.ReportParameters = report_dict.get('reportparameters', None)
-            array_of_reports.Report.append(report)
+            report_object.TimeZoneId = report_dict.get('timezoneid', None)
+
+            for report_param in utils.find_key('reportparameter', report_dict):
+                report_param_object.Name = report_param.get('name', None)
+                report_param_object.Value = report_param.get('value', None)
+                array_of_report_parameters.ReportParameter.append(report_param_object)
+
+            report_object.ReportParameters = array_of_report_parameters
+            array_of_reports.Report.append(report_object)
 
         return self.request('report_create',
-                            array_of_report)
+                            array_of_reports)
 
     def report_delete_by_id(self):
         pass
