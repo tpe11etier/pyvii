@@ -197,10 +197,10 @@ class Api(object):
             method -- SOAP method called
             args   -- SOAP method args
         '''
-        self.method = method
+        # self.method = method
         self.args = args
         try:
-            return self.methods[self.method](*self.args)
+            return self.methods[method](*self.args)
         except suds.WebFault as error:
             raise APIError(error)
 
