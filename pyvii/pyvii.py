@@ -1628,8 +1628,40 @@ class Api(object):
     # Begin Team Methods
     # ===========================================================================
 
-    def team_create(self):
-        pass
+    def team_create(self, team_list):
+        ''' Creates Teams
+
+            Keyword arguments:
+            team_list -- list of teams
+        '''
+        array_of_teams = self.client.factory.create('ArrayOfTeam')
+
+        for team in team_list:
+            team_object = self.client.factory.create('Team')
+            team_admins = self.client.factory.create('ArrayOfTeamAdministrator')
+            team_dict = utils.lower_keys(team)
+            team_object.TeamId = team_dict.get('teamid', None)
+            team_object.Name = team_dict.get('name', None)
+            team_object.EscalationId = team_dict.get('escalationid', None)
+            team_object.Source = team_dict.get('source', None)
+            team_object.Type = team_dict.get('type', None)
+            team_object.SourceIdentifier = team_dict.get('sourceidentifier', None)
+            team_object.ReadOnlyInUserInterface = team_dict.get('readonlyinuserinterface', None)
+            team_object.AccessCode = team_dict.get('accesscode', None)
+            team_object.OrganizationId = team_dict.get('organizationid', None)
+
+            for team_admin in utils.find_key('teamadministrator', team_dict):
+                team_admin_member_object = self.client.factory.create('TeamAdministratorMember')
+                team_admin_member_object.TeamId = team_admin.get('teamid', None)
+                team_admin_member_object.TeamRoleId = team_admin.get('teamroleid', None)
+                team_admin_member_object.MemberId = team_admin.get('memberid', None)
+                team_admins.TeamAdministrator.append(team_admin)
+
+            team_object.TeamAdministrators = team_admins
+            array_of_teams.Team.append(team_object)
+
+        return self.request('team_create',
+                            array_of_teams)
 
     def team_delete_by_id(self):
         pass
