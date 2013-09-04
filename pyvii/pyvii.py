@@ -1663,14 +1663,36 @@ class Api(object):
         return self.request('team_create',
                             array_of_teams)
 
-    def team_delete_by_id(self):
-        pass
+    def team_delete_by_id(self, teamid_list):
+        ''' Delete Team By TeamId
+
+            Keyword arguments:
+            teamid_list -- list of team ids
+        '''
+        array_of_teamids = self.client.factory.create('ArrayOfstring')
+
+        for teamid in teamid_list:
+            array_of_teamids.string.append(teamid)
+
+        return self.request('team_delete_by_id',
+                            array_of_teamids)
 
     def team_entry_create(self):
         pass
 
-    def team_entry_delete_by_id(self):
-        pass
+    def team_entry_delete_by_id(self, team_entry_id_list):
+        ''' Delete Team Entry By TeamEntryId
+
+            Keyword arguments:
+            team_entry_id_list -- list of team entry ids
+        '''
+        array_of_team_entry_ids = self.client.factory.create('ArrayOfstring')
+
+        for team_entry_id in team_entry_id_list:
+            array_of_team_entry_ids.string.append(team_entry_id)
+
+        return self.request('team_entry_delete_by_id',
+                            array_of_team_entry_ids)
 
     def team_entry_member_query_by_memberid(self, memberid_list, index=0, length=300):
         ''' Query Team Entries By Member Id
