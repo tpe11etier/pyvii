@@ -21,18 +21,18 @@ class APIError(Error):
 class CredentialCheckFailed(Error):
     def __init__(self, header):
         self.header = header
-        print '''Credential check failed.
+        print('''Credential check failed.
                  url=%s,
                  Domain=%s,
                  UserId=%s,
                  UserPassword=%s,
                  OemId=%s,
-                 OemPassword=%s''' % (self.header['url'],
-                                      self.header['domain'],
-                                      self.header['userid'],
-                                      self.header['userpassword'],
-                                      self.header['oemid'],
-                                      self.header['oempassword'])
+                 OemPassword=%s''') % (self.header['url'],
+                                       self.header['domain'],
+                                       self.header['userid'],
+                                       self.header['userpassword'],
+                                       self.header['oemid'],
+                                       self.header['oempassword'])
 
     def __str__(self):
         return repr('''Credential check failed. url=%s,
@@ -185,7 +185,7 @@ class Api(object):
                             'team_role_query_by_organizationid': service.TeamRoleQueryByOrganizationId,
                             'team_role_query_by_organizationid_length': service.TeamRoleQueryByOrganizationIdLength,
                             'team_role_update': service.TeamRoleUpdate,
-                            'team_update': service.TeamUpdate
+                            'team_update': service.TeamUpdate,
                             # TODO:0 Add Security Methods
                             'team_update': service.TeamUpdate,
                             'administrator_create': service.AdministratorCreate,
@@ -802,7 +802,6 @@ class Api(object):
             member_dialin_object.DialinPin = member_dialin_dict.get('dialinpin', None)
             member_dialin_object.MemberId = member_dialin_dict.get('memberid', None)
             array_of_member_dialins.MemberDialinCredential.append(member_dialin_object)
-        print array_of_member_dialins
 
         return self.request('member_dialin_credential_update',
                             array_of_member_dialins)
@@ -1697,7 +1696,7 @@ class Api(object):
     # Begin ScheduledEvent Methods
     # ===========================================================================
 
-                    # Will create methods as needed.
+    # Will create methods as needed.
 
     # ===========================================================================
     # End ScheduledEvent Methods
