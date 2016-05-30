@@ -187,9 +187,12 @@ class Api(object):
                             'team_role_update': service.TeamRoleUpdate,
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                             'team_update': service.TeamUpdate
                             # TODO:0 Add Security Methods
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                             'team_update': service.TeamUpdate,
@@ -280,6 +283,9 @@ class Api(object):
                             'security_group_query_by_sourceidentifier_length': service.SecurityGroupQueryBySourceIdentifierLength,
                             'security_group_update': service.SecurityGroupUpdate
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
