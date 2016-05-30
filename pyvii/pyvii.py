@@ -185,16 +185,8 @@ class Api(object):
                             'team_role_query_by_organizationid': service.TeamRoleQueryByOrganizationId,
                             'team_role_query_by_organizationid_length': service.TeamRoleQueryByOrganizationIdLength,
                             'team_role_update': service.TeamRoleUpdate,
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
                             'team_update': service.TeamUpdate
                             # TODO:0 Add Security Methods
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
                             'team_update': service.TeamUpdate,
                             'administrator_create': service.AdministratorCreate,
                             'administrator_delete_by_id': service.AdministratorDeleteById,
@@ -282,13 +274,6 @@ class Api(object):
                             'security_group_query_by_sourceidentifier': service.SecurityGroupQueryBySourceIdentifier,
                             'security_group_query_by_sourceidentifier_length': service.SecurityGroupQueryBySourceIdentifierLength,
                             'security_group_update': service.SecurityGroupUpdate
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
                             }
 
         except WebFault:
