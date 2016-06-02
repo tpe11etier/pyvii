@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import suds
+from suds import client
+from suds import WebFault
 import utils
 
 
@@ -20,18 +21,18 @@ class APIError(Error):
 class CredentialCheckFailed(Error):
     def __init__(self, header):
         self.header = header
-        print '''Credential check failed.
+        print('''Credential check failed.
                  url=%s,
                  Domain=%s,
                  UserId=%s,
                  UserPassword=%s,
                  OemId=%s,
-                 OemPassword=%s''' % (self.header['url'],
-                                      self.header['domain'],
-                                      self.header['userid'],
-                                      self.header['userpassword'],
-                                      self.header['oemid'],
-                                      self.header['oempassword'])
+                 OemPassword=%s''') % (self.header['url'],
+                                       self.header['domain'],
+                                       self.header['userid'],
+                                       self.header['userpassword'],
+                                       self.header['oemid'],
+                                       self.header['oempassword'])
 
     def __str__(self):
         return repr('''Credential check failed. url=%s,
@@ -57,7 +58,7 @@ class Api(object):
         auth_header = dict((k.lower(), v) for k, v in auth_header.items())
         try:
             self.url = auth_header.get('url', None)
-            self.client = suds.client.Client(self.url)
+            self.client = client.Client(self.url)
             self.header = self.client.factory.create('AuthHeader')
             self.header.Domain = auth_header.get('domain', None)
             self.header.UserId = auth_header.get('userid', None)
@@ -67,7 +68,7 @@ class Api(object):
             self.header.OemPassword = auth_header.get('oempassword', None)
             self.client.set_options(soapheaders=self.header)
 
-            #Authenticating on initialization to make sure credentials are valid.
+            # Authenticating on initialization to make sure credentials are valid.
             self.client.service.OrganizationQueryRoot()
 
             service = self.client.service
@@ -184,11 +185,98 @@ class Api(object):
                             'team_role_query_by_organizationid': service.TeamRoleQueryByOrganizationId,
                             'team_role_query_by_organizationid_length': service.TeamRoleQueryByOrganizationIdLength,
                             'team_role_update': service.TeamRoleUpdate,
-                            'team_update': service.TeamUpdate
+                            'team_update': service.TeamUpdate,
                             # TODO:0 Add Security Methods
+                            'team_update': service.TeamUpdate,
+                            'administrator_create': service.AdministratorCreate,
+                            'administrator_delete_by_id': service.AdministratorDeleteById,
+                            'administrator_query_by_default_folder_id': service.AdministratorQueryByDefaultFolderId,
+                            'administrator_query_by_default_folder_id_length': service.AdministratorQueryByDefaultFolderIdLength,
+                            'administrator_query_by_id': service.AdministratorQueryById,
+                            'administrator_query_by_member_id': service.AdministratorQueryByMemberId,
+                            'administrator_query_by_organizationid': service.AdministratorQueryByOrganizationId,
+                            'administrator_query_by_organizationid_length': service.AdministratorQueryByOrganizationIdLength,
+                            'administrator_update': service.AdministratorUpdate,
+                            'folder_content_create': service.FolderContentCreate,
+                            'folder_content_delete_by_id': service.FolderContentDeleteById,
+                            'folder_content_query_by_folder_id': service.FolderContentQueryByFolderId,
+                            'folder_content_query_by_folder_id_length': service.FolderContentQueryByFolderIdLength,
+                            'folder_content_query_by_id': service.FolderContentQueryById,
+                            'folder_create': service.FolderCreate,
+                            'folder_delete_by_id': service.FolderDeleteById,
+                            'folder_owner_create': service.FolderOwnerCreate,
+                            'folder_owner_delete_by_id': service.FolderOwnerDeleteById,
+                            'folder_owner_query_by_folder_id': service.FolderOwnerQueryByFolderId,
+                            'folder_owner_query_by_folder_id_length': service.FolderOwnerQueryByFolderIdLength,
+                            'folder_owner_query_by_id': service.FolderOwnerQueryById,
+                            'folder_owner_query_by_member_id': service.FolderOwnerQueryByMemberId,
+                            'folder_owner_query_by_member_id_length': service.FolderOwnerQueryByMemberIdLength,
+                            'folder_owner_update': service.FolderOwnerUpdate,
+                            'folder_query_by_id': service.FolderQueryById,
+                            'folder_query_by_name': service.FolderQueryByName,
+                            'folder_query_by_name_length': service.FolderQueryByNameLength,
+                            'folder_query_by_organizationid': service.FolderQueryByOrganizationId,
+                            'folder_query_by_organizationid_length': service.FolderQueryByOrganizationIdLength,
+                            'folder_share_create': service.FolderShareCreate,
+                            'folder_share_delete_by_id': service.FolderShareDeleteById,
+                            'folder_share_query_by_folder_id': service.FolderShareQueryByFolderId,
+                            'folder_share_query_by_folder_id_length': service.FolderShareQueryByFolderIdLength,
+                            'folder_share_query_by_id': service.FolderShareQueryById,
+                            'folder_share_query_by_member_id': service.FolderShareQueryByMemberId,
+                            'folder_share_query_by_member_id_length': service.FolderShareQueryByMemberIdLength,
+                            'folder_share_query_by_security_group_id': service.FolderShareQueryBySecurityGroupId,
+                            'folder_share_query_by_security_groupid_length': service.FolderShareQueryBySecurityGroupIdLength,
+                            'folder_share_update': service.FolderShareUpdate,
+                            'folder_update': service.FolderUpdate,
+                            'member_group_create': service.MemberGroupCreate,
+                            'member_group_delete_by_id': service.MemberGroupDeleteById,
+                            'member_group_entry_create': service.MemberGroupEntryCreate,
+                            'member_group_entry_delete_by_id': service.MemberGroupEntryDeleteById,
+                            'member_group_entry_query_by_id': service.MemberGroupEntryQueryById,
+                            'member_group_entry_query_by_member_groupid': service.MemberGroupEntryQueryByMemberGroupId,
+                            'member_group_entry_query_by_member_groupid_length': service.MemberGroupEntryQueryByMemberGroupIdLength,
+                            'member_group_query_by_id': service.MemberGroupQueryById,
+                            'member_group_query_by_name': service.MemberGroupQueryByName,
+                            'member_group_query_by_name_length': service.MemberGroupQueryByNameLength,
+                            'member_group_query_by_organizationid': service.MemberGroupQueryByOrganizationId,
+                            'member_group_query_by_organizationid_length': service.MemberGroupQueryByOrganizationIdLength,
+                            'member_group_query_by_sourceidentifier': service.MemberGroupQueryBySourceIdentifier,
+                            'member_group_query_by_sourceidentifier_length': service.MemberGroupQueryBySourceIdentifierLength,
+                            'member_group_update': service.MemberGroupUpdate,
+                            'permission_query_by_escalation_id': service.PermissionQueryByEscalationId,
+                            'permission_query_by_event_id': service.PermissionQueryByEventId,
+                            'permission_query_by_member_group_id': service.PermissionQueryByMemberGroupId,
+                            'permission_query_by_organization_custom_field_id': service.PermissionQueryByOrganizationCustomFieldId,
+                            'permission_query_by_organization_enabled_contact_method_id': service.PermissionQueryByOrganizationEnabledContactMethodId,
+                            'permission_query_by_organization_event_type_id': service.PermissionQueryByOrganizationEventTypeId,
+                            'permission_query_by_report_id': service.PermissionQueryByReportId,
+                            'permission_query_by_report_type_id': service.PermissionQueryByReportTypeId,
+                            'permission_query_by_scenario_id': service.PermissionQueryByScenarioId,
+                            'permission_query_by_scheduled_event_id': service.PermissionQueryByScheduledEventId,
+                            'permission_query_by_service_recording_id': service.PermissionQueryByServiceRecordingId,
+                            'permission_query_by_team_id': service.PermissionQueryByTeamId,
+                            'security_group_create': service.SecurityGroupCreate,
+                            'security_group_delete_by_id': service.SecurityGroupDeleteById,
+                            'security_group_entry_create': service.SecurityGroupEntryCreate,
+                            'security_group_entry_delete_by_id': service.SecurityGroupEntryDeleteById,
+                            'security_group_entry_query_by_id': service.SecurityGroupEntryQueryById,
+                            'security_group_entry_query_by_member_id': service.SecurityGroupEntryQueryByMemberId,
+                            'security_group_entry_query_by_member_id_length': service.SecurityGroupEntryQueryByMemberIdLength,
+                            'security_group_entry_query_by_organizationid': service.SecurityGroupEntryQueryByOrganizationId,
+                            'security_group_entry_query_by_organizationid_length': service.SecurityGroupEntryQueryByOrganizationIdLength,
+                            'security_group_entry_query_by_security_group_id': service.SecurityGroupEntryQueryBySecurityGroupId,
+                            'security_group_entry_query_by_security_group_id_length': service.SecurityGroupEntryQueryBySecurityGroupIdLength,
+                            'security_group_query_by_id': service.SecurityGroupQueryById,
+                            'security_group_query_by_name': service.SecurityGroupQueryByName,
+                            'security_group_query_by_name_length': service.SecurityGroupQueryByNameLength,
+                            'security_group_query_by_organizationid': service.SecurityGroupQueryByOrganizationId,
+                            'security_group_query_by_organizationid_length': service.SecurityGroupQueryByOrganizationIdLength,
+                            'security_group_query_by_sourceidentifier': service.SecurityGroupQueryBySourceIdentifier,
+                            'security_group_query_by_sourceidentifier_length': service.SecurityGroupQueryBySourceIdentifierLength,
+                            'security_group_update': service.SecurityGroupUpdate
                             }
 
-        except suds.WebFault:
+        except WebFault:
             raise CredentialCheckFailed(auth_header)
 
     def request(self, method, *args):
@@ -202,7 +290,7 @@ class Api(object):
         self.args = args
         try:
             return self.methods[method](*self.args)
-        except suds.WebFault as error:
+        except WebFault as error:
             raise APIError(error)
 
     # ===========================================================================
@@ -714,7 +802,6 @@ class Api(object):
             member_dialin_object.DialinPin = member_dialin_dict.get('dialinpin', None)
             member_dialin_object.MemberId = member_dialin_dict.get('memberid', None)
             array_of_member_dialins.MemberDialinCredential.append(member_dialin_object)
-        print array_of_member_dialins
 
         return self.request('member_dialin_credential_update',
                             array_of_member_dialins)
@@ -1609,7 +1696,7 @@ class Api(object):
     # Begin ScheduledEvent Methods
     # ===========================================================================
 
-                    # Will create methods as needed.
+    # Will create methods as needed.
 
     # ===========================================================================
     # End ScheduledEvent Methods
@@ -1619,7 +1706,55 @@ class Api(object):
     # Begin Security Methods
     # ===========================================================================
 
-                    # Will create methods as needed.
+    def administrator_create(self, administrator_list):
+        ''' Creates Administrators
+
+            Keyword arguments:
+            administrator_list -- list of administrators
+        '''
+        array_of_administrators = self.client.factory.create('ArrayOfAdministrator')
+
+        for administrator in administrator_list:
+            administrator_object = self.client.factory.create('Administrator')
+            administrator_dict = utils.lower_keys(administrator)
+            administrator_object.Active = administrator_dict.get('active', None)
+            administrator_object.MemberId = administrator_dict.get('memberid', None)
+            administrator_object.DefaultFolderId = administrator_dict.get('defaultfolderid', None)
+            array_of_administrators.Administrator.append(administrator_object)
+
+        return self.request('administrator_create', array_of_administrators)
+
+    def folder_delete_by_id(self, folderid_list):
+        ''' Delete Folder By Id
+
+            Keyword arguments:
+            folderid_list -- list of folder ids
+        '''
+        array_of_folderids = self.client.factory.create('ArrayOfstring')
+
+        for folderid in folderid_list:
+            array_of_folderids.string.append(folderid)
+
+        return self.request('folder_delete_by_id',
+                            array_of_folderids)
+
+    def folder_query_by_organizationid(self, orgid_list, index=0, length=300):
+        ''' Query Folders By Organization Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+            index      -- starting index
+            length     -- number of scenarios to return
+        '''
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('folder_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
 
     # ===========================================================================
     # End Security Methods
