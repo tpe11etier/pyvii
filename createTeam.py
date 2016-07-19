@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#Imports
+# Imports
 import suds
 import ConfigParser
 
@@ -10,10 +10,12 @@ try:
 except IOError as e:
     print 'File %s not found!' % e
 
-#WSDL Url
+# WSDL Url
 # url = 'http://dev4web.iceng.nuancedev.local/WebService/EPAPI_1.3/wsdl.wsdl'
 url = 'http://profiles.beta.vrli.com/WebService/EPAPI_1.3/wsdl.wsdl'
 # url = 'https://developer4.envoyww.com/WebService/EPAPI_1.0/wsdl.wsdl'
+# Test commit
+
 
 class Service(object):
     def __init__(self):
@@ -23,12 +25,13 @@ class Service(object):
         self.client = suds.client.Client(url)
         header = self.client.factory.create('AuthHeader')
         header.Domain = CONF.get("Auth Header", "domain")
-        header.UserId = CONF.get("Auth Header", "userid")
+        # header.UserId = CONF.get("Auth Header", "userid")
         header.UserPassword = CONF.get("Auth Header", "userpassword")
         header.OemId = CONF.get("Auth Header", "oemid")
         header.OemPassword = CONF.get("Auth Header", "oempassword")
         self.client.set_options(soapheaders=header)
         self.orgid = self.client.service.OrganizationQueryRoot()[0]
+
 
 def createTeam(service):
     team = service.client.factory.create('Team')
@@ -42,7 +45,6 @@ def createTeam(service):
         print service.client.service.TeamCreate(teams)
     except suds.WebFault as e:
         print e.fault.detail
-
 
 def main():
     service = Service()
