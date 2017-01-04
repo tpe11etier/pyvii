@@ -2,6 +2,7 @@
 from suds import client
 from suds import WebFault
 import utils
+import base64
 
 
 class Error(Exception):
@@ -66,7 +67,7 @@ class Api(object):
         auth_header = dict((k.lower(), v) for k, v in auth_header.items())
         try:
             self.url = auth_header.get('url', None)
-            self.client = client.Client(self.url)
+            self.client = client.Client(self.url, timeout=1200)
             self.header = self.client.factory.create('AuthHeader')
             self.header.Domain = auth_header.get('domain', None)
             self.header.UserId = auth_header.get('userid', None)
@@ -81,10 +82,7 @@ class Api(object):
 
             service = self.client.service
 
-            self.methods = {'organization_query_by_id': service.OrganizationQueryById,
-                            'organization_event_type_query_by_organizationid': service.OrganizationEventTypeQueryByOrganizationId,
-                            'escalation_create': service.OrganizationEventTypeQueryByOrganizationId,
-                            'escalation_create': service.OrganizationEventTypeQueryByOrganizationId,
+            self.methods = {'escalation_create': service.OrganizationEventTypeQueryByOrganizationId,
                             'escalation_delete_by_id': service.OrganizationEventTypeQueryByOrganizationId,
                             'escalation_query_by_id': service.EscalationQueryById,
                             'escalation_query_by_name': service.EscalationQueryByName,
@@ -193,18 +191,18 @@ class Api(object):
                             'team_role_query_by_organizationid': service.TeamRoleQueryByOrganizationId,
                             'team_role_query_by_organizationid_length': service.TeamRoleQueryByOrganizationIdLength,
                             'team_role_update': service.TeamRoleUpdate,
-                            'team_update': service.TeamUpdate,
-                            # TODO:0 Add Security Methods
-                            'team_update': service.TeamUpdate,
                             'administrator_create': service.AdministratorCreate,
                             'administrator_delete_by_id': service.AdministratorDeleteById,
                             'administrator_query_by_default_folder_id': service.AdministratorQueryByDefaultFolderId,
                             'administrator_query_by_default_folder_id_length': service.AdministratorQueryByDefaultFolderIdLength,
                             'administrator_query_by_id': service.AdministratorQueryById,
                             'administrator_query_by_member_id': service.AdministratorQueryByMemberId,
+                            'administrator_query_by_organization_id': service.AdministratorQueryByOrganizationId,
+                            'administrator_query_by_organization_id_length': service.AdministratorQueryByOrganizationIdLength,
+                            'administrator_update': service.AdministratorUpdate,
+                            'team_update': service.TeamUpdate,
                             'administrator_query_by_organizationid': service.AdministratorQueryByOrganizationId,
                             'administrator_query_by_organizationid_length': service.AdministratorQueryByOrganizationIdLength,
-                            'administrator_update': service.AdministratorUpdate,
                             'folder_content_create': service.FolderContentCreate,
                             'folder_content_delete_by_id': service.FolderContentDeleteById,
                             'folder_content_query_by_folder_id': service.FolderContentQueryByFolderId,
@@ -316,13 +314,13 @@ class Api(object):
             escalation_object = self.client.factory.create('Escalation')
             escalation_dict = dict((k.lower(), v) for k, v in escalation.items())
             for key, val in escalation_dict.items():
-                array_of_escalation_action = self.client.factory.create('ArrayOfEscalationAction')
-                array_of_escalation_contact = self.client.factory.create('ArrayOfEscalationContact')
-                array_of_escalation_device = self.client.factory.create('ArrayOfEscalationDevice')
+                # array_of_escalation_action = self.client.factory.create('ArrayOfEscalationAction')
+                # array_of_escalation_contact = self.client.factory.create('ArrayOfEscalationContact')
+                # array_of_escalation_device = self.client.factory.create('ArrayOfEscalationDevice')
                 escalation_object.Name = escalation_dict.get('name', None)
                 escalation_object.OrganizationId = escalation_dict.get('organizationid', None)
                 escalation_object.EscalationActions = escalation_dict.get('escalationactions', None)
-                escalation_actions = escalation_dict.get('escalationactions', None)
+                # escalation_actions = escalation_dict.get('escalationactions', None)
 
             array_of_escalation.Escalation.append(escalation_object)
         return array_of_escalation
@@ -497,8 +495,65 @@ class Api(object):
 
         return self.request('import_confirm', array_of_importids)
 
-    def import_create(self):
-        pass
+    def import_create(self,
+                      organizationid,
+                      importdefid,
+                      filename,
+                      confirmation=False
+                      ):
+        """ Create Import.
+
+            Keyword arguments:
+            organizationid -- org id
+            importdefid -- definition id
+            filename -- import filename
+            confirmation -- set to false by default
+        """
+
+        file_in = open(filename, 'rb').read()
+        file_encoded = base64.b64encode(file_in).decode()
+        # base64_str = base64.encodestring(('%s:%s' % (username,password)).encode()).decode().replace('\n', '')
+
+        # Create objects
+        import_object = self.client.factory.create('Import')
+        import_array = self.client.factory.create('ArrayOfImport')
+        import_filearg_object = self.client.factory.create('ImportFileArg')
+        import_filearg_array = self.client.factory.create('ArrayOfImportFileArg')
+
+        # Set import object attributes
+        import_object.OrganizationId = organizationid
+        import_object.ImportDefinitionId = importdefid
+        import_object.RequiresConfirmation = confirmation
+
+        # Set import file arg object attributes
+        import_filearg_object.Name = 'IMPORT_FILE'
+        import_filearg_object.Ordinal = '0'
+        import_filearg_object.UserFileName = filename
+        import_filearg_object.EncodedValue = file_encoded
+
+        # Append import file arg object to array
+        import_filearg_array.ImportFileArg.append(import_filearg_object)
+
+        # Set the import object ImportFileArgs attribute to the import file arg array
+        import_object.ImportFileArgs = import_filearg_array
+
+        # Append the import object to the import array
+        import_array.Import.append(import_object)
+
+        return self.request('import_create', import_array)
+        # print(import_array)
+
+    def import_confirm(self, importid_list):
+        """ Confirm Import Creation by Import Id.
+
+            Keyword arguments:
+            importid_list -- list of import ids
+        """
+        array_of_importids = self.client.factory.create('ArrayOfstring')
+        for importid in importid_list:
+            array_of_importids.string.append(importid)
+
+        return self.request('import_confirm', array_of_importids)
 
     def import_definition_create(self):
         pass
@@ -537,8 +592,10 @@ class Api(object):
         """
         array_of_orgids = self.client.factory.create('ArrayOfstring')
         for orgid in orgid_list:
+            print(orgid)
             array_of_orgids.string.append(orgid)
 
+        # print(array_of_orgids)
         return self.request('import_definition_query_by_organizationid',
                             array_of_orgids,
                             index,
@@ -569,7 +626,7 @@ class Api(object):
         for importid in importid_list:
             array_of_importids.string.append(importid)
 
-        return self.request('import_definition_query_by_organizationid',
+        return self.request('import_exception_query_by_importid',
                             array_of_importids,
                             index,
                             length)
@@ -587,7 +644,7 @@ class Api(object):
         return self.request('import_exception_query_by_importid_length',
                             array_of_importids)
 
-    def import_query_by_id(self, orgid_list, include_files=False):
+    def import_query_by_id(self, importid_list, include_files=False):
         """ Import Query by Id
 
             Keyword arguments:
@@ -595,12 +652,12 @@ class Api(object):
             index         -- starting index
             length        -- number of imports to return
         """
-        array_of_orgids = self.client.factory.create('ArrayOfstring')
-        for orgid in orgid_list:
-            array_of_orgids.string.append(orgid)
+        array_of_importids = self.client.factory.create('ArrayOfstring')
+        for importid in importid_list:
+            array_of_importids.string.append(importid)
 
         return self.request('import_query_by_id',
-                            array_of_orgids,
+                            array_of_importids,
                             include_files)
 
     def import_query_by_organizationid(self, orgid_list, include_files=False, index=0, length=300):
@@ -1731,6 +1788,84 @@ class Api(object):
 
         return self.request('administrator_create', array_of_administrators)
 
+    def administrator_delete_by_id(self, adminid_list):
+        """ Delete Administrator By Id
+
+            Keyword arguments:
+            adminid_list -- list of admin ids
+        """
+        array_of_adminids = self.client.factory.create('ArrayOfstring')
+
+        for adminid in adminid_list:
+            array_of_adminids.string.append(adminid)
+
+        return self.request('administrator_delete_by_id',
+                            array_of_adminids)
+
+    def administrator_query_by_default_folder_id(self, defaultfolderid_list, index=0, length=300):
+        """ Query Administrators By Default Folder Id
+
+            Keyword arguments:
+            defaultfolderid_list -- list of default folder ids
+            index      -- starting index
+            length     -- number of scenarios to return
+        """
+        array_of_defaultfolderids = self.client.factory.create('ArrayOfstring')
+
+        for defaultfolderid in defaultfolderid_list:
+            array_of_defaultfolderids.string.append(defaultfolderid)
+
+        return self.request('administrator_query_by_default_folder_id',
+                            array_of_defaultfolderids,
+                            index,
+                            length)
+
+    def administrator_query_by_default_folder_id_length(self, defaultfolderid_list):
+        """ Administrator Query By Default Folder Id Length
+
+            Keyword arguments:
+            defaultfolderid_list -- list of default folder ids
+        """
+        array_of_defaultfolderids = self.client.factory.create('ArrayOfstring')
+
+        for defaultfolderid in defaultfolderid_list:
+            array_of_defaultfolderids.string.append(defaultfolderid)
+
+        return self.request('administrator_query_by_default_folder_id_length',
+                            array_of_defaultfolderids)
+
+    def administrator_query_by_organizationid(self, orgid_list, index=0, length=300):
+        """ Query Administrators By Organization Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+            index      -- starting index
+            length     -- number of scenarios to return
+        """
+        array_of_orgids = self.client.factory.create('ArrayOfstring')
+
+        for orgid in orgid_list:
+            array_of_orgids.string.append(orgid)
+
+        return self.request('administrator_query_by_organizationid',
+                            array_of_orgids,
+                            index,
+                            length)
+
+    def administrator_query_by_id(self, adminid_list):
+        """ Query Administrator By Id
+
+            Keyword arguments:
+            orgid_list -- list of org ids
+        """
+        array_of_adminids = self.client.factory.create('ArrayOfstring')
+
+        for adminid in adminid_list:
+            array_of_adminids.string.append(adminid)
+
+        return self.request('administrator_query_by_id',
+                            array_of_adminids)
+
     def folder_delete_by_id(self, folderid_list):
         """ Delete Folder By Id
 
@@ -1762,6 +1897,8 @@ class Api(object):
                             array_of_orgids,
                             index,
                             length)
+
+
     # Will create methods as needed.
 
     # ===========================================================================
