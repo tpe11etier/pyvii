@@ -28,4 +28,4 @@ viimu.props
 tester.py
 test.py
 *.ipynb
-
+*.props
