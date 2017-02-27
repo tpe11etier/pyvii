@@ -29,3 +29,5 @@ tester.py
 test.py
 *.ipynb
 *.props
+pyvii.egg-info/*
+build/*
