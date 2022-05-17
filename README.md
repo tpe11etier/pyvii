@@ -3,7 +3,7 @@
 ## About
 
 Pythonic Wrapper to Varlii SOAP API - http://developer4.envoyww.com/WebService/EPAPI_1.0/intro.htm
-This is *not* supported or maintained by Varolii at all.  It's simply something I wrote to make my job easier and it's *constantly* changing.
+This is *not* supported or maintained by Varolii at all.  It's simply something I wrote to make my job easier and to assist in training.
 A large portion of the available methods in the SOAP API are not in this simply because I've only added what I feel are the most commonly used ones.
 As time goes on, I will continue to add to the list.
 
